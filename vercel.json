@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/lifter.js": {
-      "maxDuration": 15
-    }
-  }
-}
