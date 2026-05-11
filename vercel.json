@@ -1,7 +1,10 @@
 {
   "functions": {
-    "api/claude.js": {
-      "maxDuration": 30
+    "api/search.js": {
+      "maxDuration": 15
+    },
+    "api/lifter.js": {
+      "maxDuration": 15
     }
   }
 }
