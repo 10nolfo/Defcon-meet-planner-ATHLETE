@@ -1,0 +1,2228 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DEFCON Athlete</title>
+  <!-- iOS PWA — OBLIGATOIRE pour les notifications sur iPhone/iPad -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DEFCON Athlete" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #04070d; }
+    body { font-family: 'Syne', sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; color: #e0e8f4; }
+    #root { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    input, button, select, textarea { -webkit-appearance: none; appearance: none; font-family: 'Syne', sans-serif; border-radius: 0; }
+    input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.16); border-radius: 4px; }
+    .light-mode ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+    * { -webkit-font-smoothing: antialiased; }
+    input:focus, select:focus { outline: none !important; border-color: rgba(212,168,67,0.48) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.07) !important; }
+    button { cursor: pointer; transition: opacity 0.17s, transform 0.11s, background 0.17s, box-shadow 0.17s; }
+    button:active { opacity: 0.72 !important; transform: scale(0.96); }
+    .scrollable { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes notifSlideIn { from { opacity:0; transform:translateY(-12px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes livePulse { 0%,100% { opacity:1; } 50% { opacity:0.42; } }
+    .fade-up { animation: fadeUp 0.36s cubic-bezier(0.22,1,0.36,1) both; }
+    .live-badge { animation: livePulse 2.2s ease-in-out infinite; }
+
+    /* ── FFForce Calendar Integration ── */
+    :root {
+      --ff-bg:#0a0b0e; --ff-bg2:#10121a; --ff-bg3:#181c28; --ff-panel:#1a1e2e;
+      --ff-border:#252b3f; --ff-accent:#e63946; --ff-accent2:#f4a522;
+      --ff-blue:#3a7bd5; --ff-text:#e8ecf4; --ff-muted:#7a8299; --ff-success:#22c55e;
+    }
+    .ff-screen { flex:1; display:flex; flex-direction:column; position:relative; z-index:2; animation:fadeUp .4s ease; overflow:hidden; }
+    .ff-screen-header { padding:16px 20px; border-bottom:1px solid var(--ff-border); background:var(--ff-bg2); flex-shrink:0; }
+    .ff-screen-title { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:26px; text-transform:uppercase; letter-spacing:1px; color:var(--ff-text); }
+    .ff-screen-title span { color:var(--ff-accent); }
+    .ff-screen-desc { font-size:12px; color:var(--ff-muted); margin-top:3px; }
+    .ff-search-area { padding:14px 20px; background:var(--ff-bg2); border-bottom:1px solid var(--ff-border); flex-shrink:0; }
+    .ff-search-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+    .ff-field-group { display:flex; flex-direction:column; gap:5px; flex:1; min-width:140px; }
+    .ff-field-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--ff-muted); font-weight:600; }
+    .ff-field-input, .ff-field-select { background:var(--ff-panel); border:1px solid var(--ff-border); color:var(--ff-text); font-family:'Barlow',sans-serif; font-size:13px; padding:9px 12px; outline:none; transition:border-color .2s; appearance:none; border-radius:0; }
+    .ff-field-input:focus, .ff-field-select:focus { border-color:var(--ff-accent); }
+    .ff-field-input::placeholder { color:var(--ff-muted); }
+    .ff-search-btn { background:var(--ff-accent); color:#fff; border:none; cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:2px; text-transform:uppercase; padding:10px 22px; transition:all .2s; white-space:nowrap; display:flex; align-items:center; gap:7px; border-radius:0; }
+    .ff-search-btn:hover { background:#c1121f; transform:translateY(-1px); }
+    .ff-search-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .ff-results-area { flex:1; padding:16px 20px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+    .ff-results-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+    .ff-results-count { font-size:12px; color:var(--ff-muted); }
+    .ff-results-count strong { color:var(--ff-text); }
+    .ff-comp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+    .ff-comp-card { background:var(--ff-panel); border:1px solid var(--ff-border); padding:16px 18px; position:relative; overflow:hidden; transition:all .2s; animation:fadeUp .4s ease both; }
+    .ff-comp-card:hover { border-color:var(--ff-accent); transform:translateY(-2px); box-shadow:0 8px 32px rgba(230,57,70,0.12); }
+    .ff-comp-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .ff-comp-discipline { font-size:9px; letter-spacing:2px; font-weight:700; text-transform:uppercase; padding:3px 9px; background:rgba(230,57,70,0.15); color:var(--ff-accent); border:1px solid rgba(230,57,70,0.3); }
+    .ff-comp-level { font-size:10px; color:var(--ff-muted); letter-spacing:1px; text-transform:uppercase; }
+    .ff-comp-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; text-transform:uppercase; letter-spacing:.5px; line-height:1.2; margin-bottom:10px; color:var(--ff-text); }
+    .ff-comp-details { display:flex; flex-direction:column; gap:6px; }
+    .ff-comp-detail { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ff-muted); }
+    .ff-comp-detail .icon { font-size:13px; width:16px; text-align:center; }
+    .ff-comp-detail strong { color:var(--ff-text); }
+    .ff-comp-card-footer { margin-top:14px; padding-top:12px; border-top:1px solid var(--ff-border); display:flex; justify-content:space-between; align-items:center; }
+    .ff-comp-status { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:3px 9px; }
+    .ff-comp-status.open { background:rgba(34,197,94,0.1); color:var(--ff-success); border:1px solid rgba(34,197,94,0.25); }
+    .ff-comp-status.soon { background:rgba(244,165,34,0.1); color:var(--ff-accent2); border:1px solid rgba(244,165,34,0.25); }
+    .ff-comp-status.closed { background:rgba(122,130,153,0.1); color:var(--ff-muted); border:1px solid var(--ff-border); }
+    .ff-comp-status.live { background:rgba(230,57,70,0.15); color:var(--ff-accent); border:1px solid rgba(230,57,70,0.3); animation:livePulse 1.5s infinite; }
+    .ff-comp-link { font-size:11px; color:var(--ff-blue); cursor:pointer; text-decoration:underline; background:none; border:none; font-family:'Barlow',sans-serif; transition:color .2s; }
+    .ff-comp-link:hover { color:var(--ff-text); }
+    .ff-loading-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:18px; padding:50px; color:var(--ff-muted); }
+    .ff-spinner { width:40px; height:40px; border:3px solid var(--ff-border); border-top-color:var(--ff-accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+    .ff-loading-text { font-size:13px; letter-spacing:2px; text-transform:uppercase; font-family:'Barlow',sans-serif; }
+    .ff-loading-steps { display:flex; flex-direction:column; gap:7px; margin-top:6px; }
+    .ff-loading-step { display:flex; align-items:center; gap:9px; font-size:11px; color:var(--ff-muted); transition:color .3s; font-family:'Barlow',sans-serif; }
+    .ff-loading-step.active { color:var(--ff-accent); }
+    .ff-loading-step.done { color:var(--ff-success); }
+    .ff-loading-step .dot { width:7px; height:7px; border-radius:50%; background:var(--ff-border); flex-shrink:0; transition:background .3s; }
+    .ff-loading-step.active .dot { background:var(--ff-accent); animation:livePulse 1s infinite; }
+    .ff-loading-step.done .dot { background:var(--ff-success); }
+    .ff-empty-state { text-align:center; padding:50px 20px; color:var(--ff-muted); }
+    .ff-empty-icon { font-size:42px; margin-bottom:14px; }
+    .ff-empty-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; text-transform:uppercase; margin-bottom:7px; color:var(--ff-text); }
+    .ff-empty-desc { font-size:13px; line-height:1.6; font-family:'Barlow',sans-serif; }
+    .ff-ai-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(58,123,213,0.12); border:1px solid rgba(58,123,213,0.25); color:var(--ff-blue); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600; padding:4px 9px; font-family:'Barlow',sans-serif; }
+    .ff-ai-dot { width:5px; height:5px; border-radius:50%; background:var(--ff-blue); animation:livePulse 1.5s infinite; }
+    .ff-grid-bg { position:fixed; inset:0; background-image:linear-gradient(rgba(230,57,70,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(230,57,70,0.025) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; z-index:0; }
+
+    /* ── FFForce Règlement ── */
+    .rgl-screen { flex:1; display:flex; flex-direction:column; overflow:hidden; animation:fadeUp .35s ease; }
+    .rgl-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+    .rgl-rule-card { background:var(--rgl-surface); border:1px solid var(--rgl-border); overflow:hidden; transition:border-color .18s; animation:fadeUp .3s ease both; border-radius:13px; }
+    .rgl-rule-header { display:flex; align-items:center; gap:10px; padding:13px 15px; cursor:pointer; user-select:none; }
+    .rgl-rule-icon { font-size:15px; flex-shrink:0; }
+    .rgl-rule-title { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:.3px; text-transform:uppercase; flex:1; color:var(--rgl-text); }
+    .rgl-rule-chevron { font-size:11px; color:var(--rgl-muted); transition:transform .2s; }
+    .rgl-rule-card.open .rgl-rule-chevron { transform:rotate(180deg); color:var(--rgl-accent); }
+    .rgl-rule-body { padding:12px 15px 14px; font-family:'Barlow',sans-serif; font-size:13px; color:var(--rgl-muted); line-height:1.7; border-top:1px solid var(--rgl-border); }
+    .rgl-rule-body strong { color:var(--rgl-text); }
+    .rgl-rule-body ul { list-style:none; padding:0; margin:6px 0 0; display:flex; flex-direction:column; gap:5px; }
+    .rgl-rule-body ul li { display:flex; gap:8px; align-items:flex-start; }
+    .rgl-rule-body ul li::before { content:'—'; color:var(--rgl-accent); flex-shrink:0; font-weight:700; }
+    .rgl-rule-body .rgl-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:2px 8px; margin:2px 3px 2px 0; border-radius:4px; }
+    .rgl-rule-body .rgl-card-rouge { background:rgba(232,88,88,0.11); border:1px solid rgba(232,88,88,0.32); color:#e85858; }
+    .rgl-rule-body .rgl-card-bleu  { background:rgba(96,146,232,0.11); border:1px solid rgba(96,146,232,0.32); color:#6092e8; }
+    .rgl-rule-body .rgl-card-jaune { background:rgba(212,168,67,0.13); border:1px solid rgba(212,168,67,0.32); color:#d4a843; }
+    .rgl-rule-body .rgl-lumiere-blanc { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.22); color:#e0e8f4; }
+    .rgl-rule-body .rgl-lumiere-rouge { background:rgba(232,88,88,0.11); border:1px solid rgba(232,88,88,0.32); color:#e85858; }
+    .rgl-rule-body table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+    .rgl-rule-body th { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--rgl-muted); padding:6px 8px; text-align:left; border-bottom:1px solid var(--rgl-border); font-weight:700; }
+    .rgl-rule-body td { padding:6px 8px; border-bottom:1px solid var(--rgl-border); color:var(--rgl-text); vertical-align:top; }
+    .rgl-rule-body tr:last-child td { border-bottom:none; }
+    .rgl-source-note { font-size:10px; color:var(--rgl-muted); padding:10px 16px; border-top:1px solid var(--rgl-border); text-align:center; font-family:'Barlow',sans-serif; flex-shrink:0; background:var(--rgl-headerbg); }
+</style>
+</head>
+<body>
+<div id="root">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#04070d;color:#2e3d52;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.16em;">
+    DEFCON ·
+  </div>
+</div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, createContext, useContext } = React;
+
+// ─── Thèmes — identiques à l'app coach ───────────────────────────────────────
+const DARK = {
+  bg:"#04070d", bg2:"#090e1a",
+  surface:"rgba(255,255,255,0.035)", surface2:"rgba(255,255,255,0.065)",
+  border:"rgba(255,255,255,0.082)", border2:"rgba(255,255,255,0.15)",
+  gold:"#d4a843", goldDim:"rgba(212,168,67,0.13)", goldBorder:"rgba(212,168,67,0.32)",
+  red:"#e85858",  redDim:"rgba(232,88,88,0.11)",    redBorder:"rgba(232,88,88,0.32)",
+  green:"#3dba82",greenDim:"rgba(61,186,130,0.11)", greenBorder:"rgba(61,186,130,0.32)",
+  blue:"#6092e8", blueDim:"rgba(96,146,232,0.11)",  blueBorder:"rgba(96,146,232,0.32)",
+  text:"#e0e8f4", muted:"#48586e",
+  squat:"#f0a020",    squatDim:"rgba(240,160,32,0.13)",
+  bench:"#6092e8",    benchDim:"rgba(96,146,232,0.13)",
+  deadlift:"#e85858", deadliftDim:"rgba(232,88,88,0.13)",
+  headerBg:"rgba(4,7,13,0.97)", navBg:"rgba(4,7,13,0.98)", overlay:"rgba(0,0,0,0.82)",
+};
+const LIGHT = {
+  bg:"#f1f5fa", bg2:"#e5edf6",
+  surface:"rgba(0,0,0,0.038)", surface2:"rgba(0,0,0,0.068)",
+  border:"rgba(0,0,0,0.09)", border2:"rgba(0,0,0,0.16)",
+  gold:"#9e6408", goldDim:"rgba(158,100,8,0.09)", goldBorder:"rgba(158,100,8,0.30)",
+  red:"#c03232",  redDim:"rgba(192,50,50,0.09)",  redBorder:"rgba(192,50,50,0.3)",
+  green:"#1f8862",greenDim:"rgba(31,136,98,0.09)", greenBorder:"rgba(31,136,98,0.3)",
+  blue:"#2a58be", blueDim:"rgba(42,88,190,0.1)",  blueBorder:"rgba(42,88,190,0.3)",
+  text:"#16202c", muted:"#60718c",
+  squat:"#b86308",    squatDim:"rgba(184,99,8,0.1)",
+  bench:"#2a58be",    benchDim:"rgba(42,88,190,0.12)",
+  deadlift:"#c03232", deadliftDim:"rgba(192,50,50,0.12)",
+  headerBg:"rgba(241,245,250,0.97)", navBg:"rgba(241,245,250,0.98)", overlay:"rgba(0,0,0,0.52)",
+};
+
+function makeStyles(C) {
+  return {
+    inp: { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:11, color:C.text, padding:"12px 14px", fontSize:15, fontFamily:"'DM Mono',monospace", outline:"none", width:"100%", display:"block", transition:"border-color 0.18s, box-shadow 0.18s" },
+    btnGold:   { background:`linear-gradient(135deg, ${C.gold}1E 0%, ${C.gold}0A 100%)`, border:`1px solid ${C.goldBorder}`, borderRadius:13, color:C.gold, fontSize:14, fontWeight:700, padding:"14px 20px", width:"100%", letterSpacing:"0.07em", boxShadow:`0 4px 22px ${C.gold}10` },
+    btnGhost:  { background:C.surface, border:`1px solid ${C.border2}`, borderRadius:13, color:C.muted, fontSize:13, fontWeight:600, padding:"12px 16px", width:"100%" },
+    btnSm:     { background:C.surface2, border:`1px solid ${C.border}`, borderRadius:8, color:C.muted, fontSize:11, fontWeight:600, padding:"5px 11px", letterSpacing:"0.02em" },
+    btnDanger: { background:C.redDim, border:`1px solid ${C.redBorder}`, borderRadius:8, color:C.red, fontSize:11, fontWeight:600, padding:"5px 10px" },
+  };
+}
+const ThemeCtx = createContext(null);
+const useTheme = () => useContext(ThemeCtx);
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
+const MOV_ORDER = ["squat","bench","deadlift"];
+const PLANS = [
+  { key:"conservative", label:"Conservatif" },
+  { key:"classic",      label:"Classique"   },
+  { key:"aggressive",   label:"Agressif"    },
+];
+function movColor(C,k){ return {squat:C.squat,bench:C.bench,deadlift:C.deadlift}[k]||C.muted; }
+function planColor(C,k){ return {conservative:C.green,classic:C.gold,aggressive:C.red}[k]||C.muted; }
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function timeToMinutes(hhmm){ if(!hhmm)return 0; const[h,m]=hhmm.split(":").map(Number); return h*60+(m||0); }
+function minutesToTime(mins){ const v=(((mins%1440)+1440)%1440); const ts=Math.round(v*60); return `${String(Math.floor(ts/3600)).padStart(2,"0")}:${String(Math.floor((ts%3600)/60)).padStart(2,"0")}`; }
+function nowSeconds(){ const n=new Date(); return n.getHours()*3600+n.getMinutes()*60+n.getSeconds(); }
+function formatDate(iso){ if(!iso)return""; return new Date(iso+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}); }
+function daysUntil(iso){ if(!iso)return null; const t=new Date();t.setHours(0,0,0,0); const c=new Date(iso+"T00:00:00");c.setHours(0,0,0,0); return Math.round((c-t)/86400000); }
+
+// ─── Planning — identiques à l'app coach ─────────────────────────────────────
+function getMovStartTime(comp,groupId,movKey){
+  const offsets=comp.movementOffsets||{squat:0,bench:180,deadlift:360};
+  const movOffset=offsets[movKey]??0;
+  const group=(comp.groups||[]).find(g=>g.id===groupId);
+  const groupOffset=group?.offset??0;
+  const extraOffset=comp.groupMovOffsets?.[groupId]?.[movKey]??0;
+  return minutesToTime(timeToMinutes(comp.compStartTime||"10:00")+movOffset+groupOffset+extraOffset);
+}
+function computeSchedule(movConfig,compStartTime,position,delay=0){
+  if(!compStartTime||!movConfig)return[];
+  const{restBetween=6,setDuration=1.5,bufferBeforeOpener=8,warmupSets=[],generalWarmup}=movConfig;
+  const pos=position??1;
+  const n=warmupSets.length;
+  const liftMin=timeToMinutes(compStartTime)+(pos-1)+delay;
+  const sets=[];
+  if(n>0){
+    const lastStart=liftMin-bufferBeforeOpener-setDuration;
+    warmupSets.forEach((set,i)=>{
+      const offset=(n-1-i)*(restBetween+setDuration);
+      sets.push({...set,index:i,startMin:lastStart-offset,startTime:minutesToTime(lastStart-offset),type:"warmup"});
+    });
+  }
+  if(generalWarmup?.enabled!==false){
+    const dur=generalWarmup?.duration??20;
+    const anchor=sets.length>0?sets[0].startMin:(liftMin-bufferBeforeOpener-setDuration);
+    sets.unshift({id:"general",type:"general",index:-1,startMin:anchor-dur,startTime:minutesToTime(anchor-dur),duration:dur});
+  }
+  return sets;
+}
+function setKey(sc){ return sc.type==="general"?"general":String(sc.index); }
+
+// ─── Migration — identique à l'app coach ─────────────────────────────────────
+function defaultMovement(){
+  return{position:1,openerWeight:"",gamePlan:{attempt2:{conservative:"",classic:"",aggressive:""},attempt3:{conservative:"",classic:"",aggressive:""}},doneSets:{},restBetween:6,setDuration:1.5,bufferBeforeOpener:8,generalWarmup:{enabled:true,duration:20},warmupSets:[{id:uid(),weight:0},{id:uid(),weight:70},{id:uid(),weight:120}]};
+}
+function migrateAthleteMovement(m,fallback){
+  const def=defaultMovement();
+  if(!m)return def;
+  const fb=fallback||{};
+  const warmupSets=(m.warmupSets&&m.warmupSets.length>0)?m.warmupSets.map(s=>({...s,id:s.id||uid()})):(fb.warmupSets&&fb.warmupSets.length>0)?fb.warmupSets.map(s=>({...s,id:s.id||uid()})):def.warmupSets;
+  return{position:m.position??1,openerWeight:m.openerWeight??"",gamePlan:m.gamePlan||def.gamePlan,doneSets:m.doneSets||{},restBetween:m.restBetween??fb.restBetween??def.restBetween,setDuration:m.setDuration??fb.setDuration??def.setDuration,bufferBeforeOpener:m.bufferBeforeOpener??fb.bufferBeforeOpener??def.bufferBeforeOpener,generalWarmup:m.generalWarmup||fb.generalWarmup||def.generalWarmup,warmupSets};
+}
+function migrateComp(c){
+  if(!c)return null;
+  let out={...c};
+  if(!out.groups||!out.groups.length){const g={id:uid(),name:"Groupe 1",offset:0,athleteCount:10};out.groups=[g];out.athletes=(out.athletes||[]).map(a=>({...a,groupId:g.id}));}
+  if(!out.compStartTime)out.compStartTime="10:00";
+  if(!out.movementOffsets)out.movementOffsets={squat:0,bench:180,deadlift:360};
+  const fgId=out.groups[0]?.id;
+  const ng=out.groups.map(g=>({id:g.id,name:g.name||"Groupe",offset:g.offset??0,athleteCount:g.athleteCount??10,_lm:g.movements}));
+  out.athletes=(out.athletes||[]).map(a=>{
+    const gId=a.groupId&&ng.find(g=>g.id===a.groupId)?a.groupId:fgId;
+    const grp=ng.find(g=>g.id===gId);const lm=grp?._lm;
+    return{...a,groupId:gId,movements:{squat:migrateAthleteMovement(a.movements?.squat,lm?.squat),bench:migrateAthleteMovement(a.movements?.bench,lm?.bench),deadlift:migrateAthleteMovement(a.movements?.deadlift,lm?.deadlift)}};
+  });
+  out.groups=ng.map(({_lm,...g})=>g);
+  return out;
+}
+
+// ─── Firebase ─────────────────────────────────────────────────────────────────
+const FB_URL="https://defconmeetplanertest1-default-rtdb.europe-west1.firebasedatabase.app";
+function fetchTO(url,opts,ms=8000){return new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error("timeout")),ms);fetch(url,opts).then(r=>{clearTimeout(t);res(r);}).catch(e=>{clearTimeout(t);rej(e);});});}
+async function fbGet(url,code){try{const r=await fetchTO(`${url}/teams/${encodeURIComponent(code)}.json`,{});if(!r.ok)return null;return await r.json();}catch{return null;}}
+async function fbSet(url,code,data){try{const r=await fetchTO(`${url}/teams/${encodeURIComponent(code)}.json`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});return r.ok;}catch{return false;}}
+
+// Version détaillée pour le login — retourne l'erreur précise
+async function fbGetDetailed(url,code){
+  try{
+    const r=await fetchTO(`${url}/teams/${encodeURIComponent(code)}.json`,{});
+    if(r.status===401||r.status===403)return{error:"rules",status:r.status};
+    if(!r.ok)return{error:"http",status:r.status};
+    const data=await r.json();
+    return{data};
+  }catch(e){
+    return{error:e.message==="timeout"?"timeout":"network"};
+  }
+}
+
+// ─── Normalisation des noms (accents, tirets, casse) ─────────────────────────
+function normalizeName(s){
+  return s.trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[-_'.]/g," ")
+    .replace(/\s+/g," ");
+}
+
+// ─── Audio ─────────────────────────────────────────────────────────────────────
+let _ctx=null;
+function getCtx(){if(!_ctx){try{_ctx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(_ctx?.state==="suspended"){try{_ctx.resume();}catch(e){}}return _ctx;}
+function tone(freq,dur,vol,when){const ctx=getCtx();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=freq;o.type="sine";const t=when??ctx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur);}catch(e){}}
+// ─── Notification helpers ──────────────────────────────────────────────────
+function trySystemNotif(title, body, tag) {
+  try {
+    if (!("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+    // Sur iOS PWA standalone, new Notification() fonctionne directement (iOS 16.4+)
+    // On essaie d'abord le Service Worker si disponible, sinon fallback direct
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, { body, tag, renotify:true, requireInteraction:true });
+      }).catch(()=>{ new Notification(title, { body, tag, requireInteraction:true }); });
+    } else {
+      new Notification(title, { body, tag, requireInteraction:true });
+    }
+  } catch(e) {
+    // Dernier recours — certains iOS acceptent quand même new Notification()
+    try { new Notification(title, { body, tag }); } catch(_) {}
+  }
+}
+const notifBusRef = { listeners: [] };
+function emitNotif(data) { notifBusRef.listeners.forEach(fn => fn(data)); }
+function NotifBanner() {
+  const { C } = useTheme();
+  const [banners, setBanners] = React.useState([]);
+  React.useEffect(() => {
+    const handler = (data) => {
+      const id = Date.now() + Math.random();
+      setBanners(prev => [...prev.slice(-3), { ...data, id }]);
+      setTimeout(() => setBanners(prev => prev.filter(b => b.id !== id)), 8000);
+    };
+    notifBusRef.listeners.push(handler);
+    return () => { notifBusRef.listeners = notifBusRef.listeners.filter(f => f !== handler); };
+  }, []);
+  if (!banners.length) return null;
+  return React.createElement('div', {
+    style:{ position:'fixed', top:12, left:'50%', transform:'translateX(-50%)', zIndex:9999,
+            display:'flex', flexDirection:'column', gap:6, width:'min(400px,94vw)', pointerEvents:'none' }
+  }, banners.map(b => React.createElement('div', { key:b.id, style:{
+    background: b.urgent ? 'rgba(232,88,88,0.16)' : 'rgba(212,168,67,0.15)',
+    border: `1.5px solid ${b.urgent ? '#e85858' : '#d4a843'}`,
+    borderRadius:13, padding:'11px 15px', backdropFilter:'blur(16px)',
+    boxShadow:'0 6px 28px rgba(0,0,0,0.4)', pointerEvents:'none',
+    animation:'notifSlideIn 0.28s cubic-bezier(0.22,1,0.36,1)'
+  }},
+    React.createElement('div',{style:{fontSize:13,fontWeight:800,color:b.urgent?'#f55':'#fc0',marginBottom:2}},b.title),
+    React.createElement('div',{style:{fontSize:12,color:'#fff',opacity:0.9}},b.body)
+  )));
+}
+// ───────────────────────────────────────────────────────────────────────────
+function playAlert(){const ctx=getCtx();if(!ctx)return;const t=ctx.currentTime;tone(660,.18,.5,t);tone(880,.18,.6,t+.22);tone(1100,.18,.65,t+.44);tone(1320,.55,.75,t+.66);}
+function playWarn(){const ctx=getCtx();if(!ctx)return;const t=ctx.currentTime;tone(440,.25,.3,t);tone(550,.3,.3,t+.35);}
+function initAudio(){tone(440,.04,.03);}
+
+// ─── Countdown — utilise ThemeCtx comme l'app coach ──────────────────────────
+function Countdown({targetMin,sm}){
+  const{C}=useTheme();
+  const[secs,setSecs]=useState(null);
+  useEffect(()=>{const upd=()=>setSecs(Math.round(targetMin*60-nowSeconds()));upd();const iv=setInterval(upd,500);return()=>clearInterval(iv);},[targetMin]);
+  if(secs===null)return null;
+  const abs=Math.abs(secs),m=Math.floor(abs/60),s=abs%60;
+  const txt=`${secs<0?"-":""}${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  const isPast=secs<0,isNow=abs<90;
+  return(<span style={{fontFamily:"'DM Mono',monospace",fontSize:sm?11:13,fontWeight:700,padding:sm?"2px 6px":"3px 10px",borderRadius:5,whiteSpace:"nowrap",background:isPast?C.redDim:isNow?C.goldDim:C.surface2,color:isPast?C.red:isNow?C.gold:C.muted,border:`1px solid ${isPast?C.redBorder:isNow?C.goldBorder:C.border}`}}>{txt}</span>);
+}
+
+// ─── ErrorBoundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component{
+  constructor(p){super(p);this.state={err:null};}
+  static getDerivedStateFromError(err){return{err};}
+  render(){
+    if(this.state.err)return(<div style={{background:"#04070d",padding:24,minHeight:"100vh",display:"flex",flexDirection:"column",gap:14}}><div style={{fontSize:20}}>⚠️</div><div style={{color:"#e85858",fontSize:14,fontWeight:700}}>Erreur</div><div style={{color:"#48586e",fontSize:11,fontFamily:"monospace",background:"rgba(255,255,255,0.05)",padding:12,borderRadius:11,wordBreak:"break-all"}}>{this.state.err?.message||String(this.state.err)}</div><button onClick={()=>window.location.reload()} style={{background:"rgba(212,168,67,0.12)",border:"1px solid rgba(212,168,67,0.30)",borderRadius:12,color:"#d4a843",fontSize:13,fontWeight:700,padding:"13px",cursor:"pointer",letterSpacing:"0.06em"}}>RECHARGER</button></div>);
+    return this.props.children;
+  }
+}
+
+// ─── Hash simple (identique à l'app coach) ────────────────────────────────────
+function simpleHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) + h) + str.charCodeAt(i); h = h & h; }
+  return h.toString(36);
+}
+
+
+// ─── AthleteProfileScreen ────────────────────────────────────────────────────
+function AthleteProfileScreen({ rosterAthlete, onBack }) {
+  const { C, btnSm } = useTheme();
+  const a = rosterAthlete;
+  const b = a.bestLifts || {};
+  const comps = a.competitions || [];
+  const maxSq = Math.max(0,...comps.map(c=>c.squat||0));
+  const maxBn = Math.max(0,...comps.map(c=>c.bench||0));
+  const maxDl = Math.max(0,...comps.map(c=>c.deadlift||0));
+  const maxTo = Math.max(0,...comps.map(c=>c.total||0));
+  const initials = a.name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  const placeColor = p => p===1?'#f5c518':p===2?'#c0c0c0':p===3?'#cd7f32':null;
+  const placeLabel = p => p===1?'🥇 1er':p===2?'🥈 2e':p===3?'🥉 3e':p?`#${p}`:null;
+
+  const statCards = [
+    {label:'Meilleur Squat',    val:b.squat,    color:C.squat,    unit:'kg'},
+    {label:'Meilleur Bench',    val:b.bench,    color:C.bench,    unit:'kg'},
+    {label:'Meilleur Soulevé',  val:b.deadlift, color:C.deadlift, unit:'kg'},
+    {label:'Meilleur Total',    val:b.total,    color:C.gold,     unit:'kg'},
+  ];
+
+  return (
+    <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+
+      {/* ── Barre de navigation ── */}
+      <div style={{flexShrink:0,background:C.headerBg,borderBottom:`1px solid ${C.border}`}}>
+        <div style={{height:2,background:`linear-gradient(90deg,transparent,${C.gold}80,transparent)`}}/>
+        <div style={{padding:'11px 16px',display:'flex',alignItems:'center',gap:10}}>
+          <button onClick={onBack} style={{...btnSm,padding:'5px 12px',display:'flex',alignItems:'center',gap:5}}>
+            <span style={{fontSize:14}}>←</span>
+          </button>
+          <div style={{fontSize:14,fontWeight:800,color:C.text,letterSpacing:'0.02em',flex:1}}>Mon Profil</div>
+          {a.openipfUrl&&(
+            <a href={a.openipfUrl} target="_blank" rel="noreferrer"
+              style={{fontSize:10,color:C.gold,textDecoration:'none',padding:'5px 11px',
+                border:`1px solid ${C.goldBorder}`,background:C.goldDim,borderRadius:8,
+                fontWeight:700,letterSpacing:'0.05em',display:'flex',alignItems:'center',gap:4}}>
+              ↗ OpenIPF
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div style={{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch'}}>
+        <div style={{padding:'16px'}}>
+
+          {/* ── Profile header card ── */}
+          <div style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+            background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16}}>
+            {/* Avatar */}
+            <div style={{width:52,height:52,borderRadius:'50%',flexShrink:0,
+              background:`linear-gradient(135deg,${C.gold}33,${C.gold}11)`,
+              border:`2px solid ${C.goldBorder}`,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              fontSize:18,fontWeight:800,color:C.gold}}>
+              {initials}
+            </div>
+            {/* Nom + badges */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:18,fontWeight:700,color:C.text,marginBottom:5,
+                overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.name}</div>
+              <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                {a.category&&(
+                  <span style={{display:'inline-flex',alignItems:'center',padding:'2px 9px',borderRadius:20,
+                    fontSize:11,fontWeight:600,background:C.goldDim,color:C.gold,border:`1px solid ${C.goldBorder}`}}>
+                    {a.category}
+                  </span>
+                )}
+                <span style={{display:'inline-flex',alignItems:'center',padding:'2px 9px',borderRadius:20,
+                  fontSize:11,fontWeight:600,background:C.blueDim,color:C.blue,border:`1px solid ${C.blueBorder}`}}>
+                  IPF
+                </span>
+                <span style={{fontSize:12,color:C.muted}}>
+                  {comps.length} compétition{comps.length!==1?'s':''}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Grille stats ── */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:18}}>
+            {statCards.map(s=>(
+              <div key={s.label} style={{background:C.surface,border:`1px solid ${C.border}`,
+                borderRadius:10,padding:'13px 14px',position:'relative',overflow:'hidden'}}>
+                {/* barre colorée en haut */}
+                <div style={{position:'absolute',top:0,left:0,right:0,height:2,
+                  background:`linear-gradient(90deg,${s.color}80,${s.color}20)`}}/>
+                <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'0.12em',
+                  color:C.muted,fontWeight:600,marginBottom:7}}>{s.label}</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:5}}>
+                  <span style={{fontSize:24,fontWeight:700,color:s.color,
+                    fontFamily:"'DM Mono',monospace",lineHeight:1}}>
+                    {s.val||'—'}
+                  </span>
+                  {s.val&&<span style={{fontSize:12,color:C.muted,fontWeight:400}}>{s.unit}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Titre section historique ── */}
+          <div style={{fontSize:11,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.12em',
+            color:C.muted,marginBottom:10}}>Historique des compétitions</div>
+
+          {/* ── Tableau desktop-style sur mobile ── */}
+          {comps.length===0?(
+            <div style={{textAlign:'center',padding:'40px 20px',color:C.muted,
+              background:C.surface,border:`1px solid ${C.border}`,borderRadius:12}}>
+              <div style={{fontSize:30,marginBottom:10}}>📊</div>
+              <div style={{fontSize:13}}>Aucune compétition trouvée.</div>
+            </div>
+          ):(
+            <>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden'}}>
+                {/* En-tête tableau */}
+                <div style={{display:'grid',gridTemplateColumns:'1fr auto auto auto auto auto',
+                  gap:0,borderBottom:`1px solid ${C.border}`,padding:'8px 12px',
+                  background:C.surface2}}>
+                  {['Compétition','SQ','BP','DL','TOT','Rang'].map((h,i)=>(
+                    <div key={h} style={{fontSize:9,fontWeight:700,textTransform:'uppercase',
+                      letterSpacing:'0.12em',color:C.muted,
+                      textAlign:i>0?'center':'left',
+                      paddingLeft:i===0?0:8}}>
+                      {h}
+                    </div>
+                  ))}
+                </div>
+                {/* Lignes */}
+                {comps.map((comp,i)=>{
+                  const isPrSq=comp.squat===maxSq&&maxSq>0;
+                  const isPrBn=comp.bench===maxBn&&maxBn>0;
+                  const isPrDl=comp.deadlift===maxDl&&maxDl>0;
+                  const isPrTo=comp.total===maxTo&&maxTo>0;
+                  const pc=placeColor(comp.place);
+                  const pl=placeLabel(comp.place);
+                  return(
+                    <div key={i} style={{borderBottom:i<comps.length-1?`1px solid ${C.border}`:'none',
+                      padding:'10px 12px',background:i%2===0?'transparent':C.surface2}}>
+                      {/* Ligne infos comp */}
+                      <div style={{display:'grid',gridTemplateColumns:'1fr auto auto auto auto auto',gap:0,alignItems:'center'}}>
+                        {/* Nom + date */}
+                        <div style={{minWidth:0}}>
+                          <div style={{fontSize:12,fontWeight:600,color:C.text,
+                            overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',
+                            maxWidth:'100%'}}>{comp.meet||'—'}</div>
+                          <div style={{fontSize:10,color:C.muted,marginTop:1}}>
+                            {comp.date||''}
+                            {comp.location&&comp.location!=='—'?` · ${comp.location}`:''}
+                            {comp.bodyweight?` · ${comp.bodyweight}kg`:''}
+                          </div>
+                        </div>
+                        {/* Squat */}
+                        <div style={{textAlign:'center',paddingLeft:8}}>
+                          <span style={{fontSize:13,fontWeight:isPrSq?800:500,
+                            color:isPrSq?C.squat:C.text,fontFamily:"'DM Mono',monospace"}}>
+                            {comp.squat||'—'}
+                          </span>
+                        </div>
+                        {/* Bench */}
+                        <div style={{textAlign:'center',paddingLeft:8}}>
+                          <span style={{fontSize:13,fontWeight:isPrBn?800:500,
+                            color:isPrBn?C.bench:C.text,fontFamily:"'DM Mono',monospace"}}>
+                            {comp.bench||'—'}
+                          </span>
+                        </div>
+                        {/* Deadlift */}
+                        <div style={{textAlign:'center',paddingLeft:8}}>
+                          <span style={{fontSize:13,fontWeight:isPrDl?800:500,
+                            color:isPrDl?C.deadlift:C.text,fontFamily:"'DM Mono',monospace"}}>
+                            {comp.deadlift||'—'}
+                          </span>
+                        </div>
+                        {/* Total */}
+                        <div style={{textAlign:'center',paddingLeft:8}}>
+                          <span style={{fontSize:13,fontWeight:isPrTo?800:600,
+                            color:isPrTo?C.gold:C.text,fontFamily:"'DM Mono',monospace"}}>
+                            {comp.total||'—'}
+                          </span>
+                        </div>
+                        {/* Rang */}
+                        <div style={{textAlign:'center',paddingLeft:8,minWidth:36}}>
+                          {pl?(
+                            <span style={{fontSize:11,fontWeight:700,color:pc||C.muted}}>{pl}</span>
+                          ):(
+                            <span style={{fontSize:11,color:C.muted}}>—</span>
+                          )}
+                        </div>
+                      </div>
+                      {/* DOTS score si dispo */}
+                      {comp.dots&&(
+                        <div style={{marginTop:5,fontSize:10,color:C.muted,display:'flex',gap:4,alignItems:'center'}}>
+                          <span>DOTS</span>
+                          <span style={{color:C.gold,fontFamily:"'DM Mono',monospace",fontWeight:700}}>
+                            {comp.dots.toFixed(2)}
+                          </span>
+                          {comp.weightClass&&<span style={{color:C.muted}}>· -{comp.weightClass}kg</span>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Légende PR */}
+              <div style={{marginTop:8,fontSize:10,color:C.muted,textAlign:'right',
+                display:'flex',justifyContent:'flex-end',gap:12}}>
+                <span><span style={{color:C.squat,fontWeight:700}}>■</span> SQ PR</span>
+                <span><span style={{color:C.bench,fontWeight:700}}>■</span> BP PR</span>
+                <span><span style={{color:C.deadlift,fontWeight:700}}>■</span> DL PR</span>
+                <span><span style={{color:C.gold,fontWeight:700}}>■</span> Total PR</span>
+              </div>
+            </>
+          )}
+
+          {a.loadedAt&&(
+            <div style={{textAlign:'center',fontSize:10,color:C.muted,padding:'12px 0 4px'}}>
+              Source : openipf.org
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── LoginScreen ──────────────────────────────────────────────────────────────
+// Étape 1 : saisie du code équipe → charge la liste des athlètes
+// Étape 2 : l'athlète tape sur son nom dans la liste (plus de saisie manuelle du prénom)
+function LoginScreen({onLogin,initialErr=""}){
+  const{C,inp,btnGold,btnGhost}=useTheme();
+  const[code,setCode]=useState(localStorage.getItem("defcon_ath_code")||"");
+  const[pass,setPass]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[err,setErr]=useState(initialErr);
+  // Étape 2 : données chargées, en attente de sélection de l'athlète
+  const[loadedData,setLoadedData]=useState(null); // {cfg, data, athletes:[{comp,athlete}]}
+  const[search,setSearch]=useState("");
+
+  async function loadTeam(){
+    if(!code.trim()){setErr("Saisis le nom de l'équipe.");return;}
+    if(!pass.trim()){setErr("Saisis le mot de passe.");return;}
+    setLoading(true);setErr("");initAudio();
+    const result=await fbGetDetailed(FB_URL,code.trim());
+    setLoading(false);
+    if(result.error==="rules"){
+      setErr("🔴 Accès refusé par Firebase (erreur "+result.status+"). Les règles ont probablement expiré. Dis à ton coach d'aller dans Firebase Console → Realtime Database → Règles et de remettre { \".read\": true, \".write\": true }.");
+      return;
+    }
+    if(result.error==="timeout"){setErr("⏱ Délai dépassé. Vérifie ta connexion internet.");return;}
+    if(result.error==="network"){setErr("📡 Impossible de contacter Firebase. Vérifie ta connexion.");return;}
+    if(!result.data){setErr("❓ Équipe introuvable — vérifie le nom avec ton coach.");return;}
+    // Vérification du mot de passe
+    if(!result.data.passwordHash){
+      setErr("🔒 Cette équipe n'a pas de mot de passe — elle a été créée avec l'ancienne version. Demande à ton coach de la recréer.");return;
+    }
+    if(result.data.passwordHash!==simpleHash(pass)){
+      setErr("🔒 Mot de passe incorrect.");return;
+    }
+    // Construire la liste : teamRoster en priorité + athlètes manuels des compétitions
+    const roster = result.data.teamRoster || [];
+    const compsData = result.data.competitions || [];
+    const compAthleteNames = new Set();
+    compsData.forEach(comp => (comp.athletes||[]).forEach(a => { if(a?.name) compAthleteNames.add(normalizeName(a.name)); }));
+    const rosterNorms = new Set(roster.map(r => normalizeName(r.name)));
+    const manualNames = [...compAthleteNames].filter(n => !rosterNorms.has(n));
+    const manualAthletes = [];
+    const seenManual = new Set();
+    compsData.forEach(comp => (comp.athletes||[]).forEach(a => {
+      if(!a?.name) return;
+      const nn = normalizeName(a.name);
+      if(manualNames.includes(nn) && !seenManual.has(nn)){ seenManual.add(nn); manualAthletes.push(a); }
+    }));
+    if(roster.length===0 && manualAthletes.length===0){
+      setErr("⚠️ Aucun athlète trouvé dans cette équipe. Demande à ton coach d'en ajouter.");
+      return;
+    }
+    localStorage.setItem("defcon_ath_code",code.trim());
+    setLoadedData({cfg:{url:FB_URL,code:code.trim()},data:result.data,roster,manualAthletes});
+  }
+
+  function selectAthlete(entry){
+    // entry = { name, rosterAthlete: obj|null }
+    localStorage.setItem("defcon_ath_name", entry.name);
+    onLogin({url:FB_URL,code:code.trim()}, entry.name, loadedData.data, entry.rosterAthlete||null);
+  }
+
+  // ── Étape 2 : liste des athlètes ──────────────────────────────────────────
+  if(loadedData){
+    const sl=normalizeName(search);
+    const allRoster = loadedData.roster||[];
+    const allManual = loadedData.manualAthletes||[];
+    const filteredRoster = search.trim() ? allRoster.filter(a=>normalizeName(a.name).includes(sl)) : allRoster;
+    const filteredManual = search.trim() ? allManual.filter(a=>normalizeName(a.name).includes(sl)) : allManual;
+    const totalCount = allRoster.length + allManual.length;
+    return(
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{borderBottom:`1px solid ${C.border}`,flexShrink:0,background:C.headerBg,backdropFilter:"blur(16px)"}}>
+          <div style={{padding:"13px 16px 13px"}}>
+            <button onClick={()=>{setLoadedData(null);setSearch("");}} style={{background:"transparent",border:"none",color:C.muted,fontSize:11,padding:0,marginBottom:12,fontWeight:600,cursor:"pointer",letterSpacing:"0.04em"}}>← retour</button>
+            <div style={{fontSize:20,fontWeight:800,color:C.text,letterSpacing:"0.02em"}}>Qui es-tu ?</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:4,lineHeight:1.5}}>Sélectionne ton profil pour continuer.</div>
+            {totalCount>5&&(
+              <input value={search} onChange={e=>setSearch(e.target.value)} style={{...inp,marginTop:12,fontSize:13}} placeholder="Rechercher…"/>
+            )}
+          </div>
+        </div>
+        <div className="scrollable" style={{flex:1,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:8}}>
+          {filteredRoster.length===0&&filteredManual.length===0&&(
+            <div style={{textAlign:"center",color:C.muted,fontSize:13,marginTop:24}}>Aucun profil correspondant.</div>
+          )}
+          {/* Athlètes du roster OpenIPF */}
+          {filteredRoster.length>0&&(
+            <>
+              {allManual.length>0&&<div style={{fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,marginBottom:4}}>Profils liés OpenIPF</div>}
+              {filteredRoster.map(ra=>{
+                const b=ra.bestLifts||{};
+                const initials=ra.name.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                return(
+                  <button key={ra.username||ra.name} onClick={()=>selectAthlete({name:ra.name,rosterAthlete:ra})}
+                    style={{background:`linear-gradient(135deg,${C.gold}0A,${C.surface})`,
+                      border:`1px solid ${C.goldBorder}`,borderRadius:14,padding:"13px 14px",
+                      textAlign:"left",display:"flex",alignItems:"center",gap:13,width:"100%",cursor:"pointer"}}>
+                    <div style={{width:42,height:42,borderRadius:"50%",
+                      background:`linear-gradient(135deg,${C.gold}28,${C.gold}0E)`,
+                      border:`1.5px solid ${C.goldBorder}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:14,fontWeight:800,color:C.gold,flexShrink:0}}>
+                      {initials}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:15,fontWeight:800,color:C.text}}>{ra.name}</div>
+                      <div style={{display:"flex",gap:6,marginTop:5,flexWrap:"wrap",alignItems:"center"}}>
+                        {ra.category&&<span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,background:C.goldDim,color:C.gold,border:`1px solid ${C.goldBorder}`,letterSpacing:"0.04em"}}>{ra.category}</span>}
+                        {b.total&&<span style={{fontSize:10,color:C.muted,fontFamily:"'DM Mono',monospace"}}>Total {b.total} kg</span>}
+                      </div>
+                    </div>
+                    <span style={{color:C.gold,fontSize:16,flexShrink:0,opacity:0.8}}>→</span>
+                  </button>
+                );
+              })}
+            </>
+          )}
+          {/* Athlètes manuels */}
+          {filteredManual.length>0&&(
+            <>
+              <div style={{fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,marginTop:8,marginBottom:4}}>
+                {allRoster.length>0?"Autres athlètes":"Athlètes"}
+              </div>
+              {filteredManual.map(ath=>{
+                const initials=ath.name.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                return(
+                  <button key={ath.id||ath.name} onClick={()=>selectAthlete({name:ath.name,rosterAthlete:null})}
+                    style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 14px",
+                      textAlign:"left",display:"flex",alignItems:"center",gap:13,width:"100%",cursor:"pointer"}}>
+                    <div style={{width:42,height:42,borderRadius:"50%",background:C.surface2,
+                      border:`1px solid ${C.border2}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:14,fontWeight:700,color:C.muted,flexShrink:0}}>
+                      {initials}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:15,fontWeight:800,color:C.text}}>{ath.name}</div>
+                    </div>
+                    <span style={{color:C.muted,fontSize:14,flexShrink:0,opacity:0.6}}>→</span>
+                  </button>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Étape 1 : saisie du code ──────────────────────────────────────────────
+  return(
+    <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px",gap:30,position:"relative",minHeight:0}}>
+      {/* Halo de fond */}
+      <div style={{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-10%",left:"50%",transform:"translateX(-50%)",width:"120%",height:"55%",
+          background:"radial-gradient(ellipse at 50% 20%, rgba(212,168,67,0.07) 0%, transparent 65%)"}}/>
+      </div>
+
+      {/* Logo */}
+      <div style={{textAlign:"center",position:"relative",zIndex:1}} className="fade-up">
+        <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",
+          width:54,height:54,borderRadius:14,
+          background:"linear-gradient(135deg,rgba(212,168,67,0.18),rgba(212,168,67,0.06))",
+          border:"1px solid rgba(212,168,67,0.30)",
+          marginBottom:20,boxShadow:"0 8px 32px rgba(212,168,67,0.12)"}}>
+          <div style={{width:24,height:24,borderRadius:6,border:`2.5px solid ${C.gold}`,
+            display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{width:9,height:9,borderRadius:2,background:C.gold,opacity:0.75}}/>
+          </div>
+        </div>
+        <div style={{fontSize:30,fontWeight:800,color:C.text,letterSpacing:"0.06em",lineHeight:1}}>DEFCON</div>
+        <div style={{fontSize:9,color:C.gold,letterSpacing:"0.38em",marginTop:6,fontWeight:700}}>ATHLETE</div>
+        <div style={{fontSize:12,color:C.muted,marginTop:14,lineHeight:1.7,maxWidth:250}}>
+          Ton planning d'échauffement en temps réel.
+        </div>
+      </div>
+
+      {/* Formulaire */}
+      <div style={{width:"100%",maxWidth:370,position:"relative",zIndex:1}} className="fade-up">
+        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:18,
+          padding:"22px 20px",display:"flex",flexDirection:"column",gap:17}}>
+          <div>
+            <div style={{fontSize:9,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.20em",fontWeight:700}}>Équipe</div>
+            <input value={code} onChange={e=>setCode(e.target.value)} style={{...inp,fontSize:14}} placeholder="nom de l'équipe" autoCapitalize="off" autoCorrect="off" spellCheck={false} onKeyDown={e=>e.key==="Enter"&&loadTeam()}/>
+          </div>
+          <div>
+            <div style={{fontSize:9,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.20em",fontWeight:700}}>Mot de passe</div>
+            <input type="password" value={pass} onChange={e=>setPass(e.target.value)} style={{...inp,fontSize:14}} placeholder="••••••••" onKeyDown={e=>e.key==="Enter"&&loadTeam()}/>
+          </div>
+          {err&&(
+            <div style={{color:C.red,fontSize:12,padding:"10px 13px",background:C.redDim,borderRadius:10,
+              border:`1px solid ${C.redBorder}`,lineHeight:1.55}}>{err}</div>
+          )}
+          <button onClick={loadTeam} disabled={loading} style={{...btnGold,opacity:loading?0.65:1,
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginTop:2,
+            fontSize:13,letterSpacing:"0.1em"}}>
+            {loading
+              ? <><span style={{width:14,height:14,border:`2px solid ${C.gold}`,borderTopColor:"transparent",
+                  borderRadius:"50%",display:"inline-block",animation:"spin 0.75s linear infinite"}}/>CONNEXION…</>
+              : "ACCÉDER →"}
+          </button>
+        </div>
+        <div style={{textAlign:"center",fontSize:10,color:C.muted,marginTop:12,opacity:0.55,letterSpacing:"0.04em"}}>
+          Code fourni par ton coach · DEFCON Meet Planner
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── FFForce — Constantes & Composants ───────────────────────────────────────
+const FF_DISCIPLINES = [
+  "Toutes","Force Athlétique (FA)","Powerlifting (PL)",
+  "Développé Couché (DC)","Bench Press (BP)","Culturisme","Fitness","Haltérophilie",
+];
+const FF_REGIONS = [
+  "Toutes","Auvergne-Rhône-Alpes","Bourgogne-Franche-Comté","Bretagne",
+  "Centre-Val de Loire","Corse","Grand Est","Hauts-de-France","Île-de-France",
+  "Normandie","Nouvelle-Aquitaine","Occitanie","Pays de la Loire",
+  "Provence-Alpes-Côte d'Azur",
+];
+const FF_NIVEAUX = ["Tous","National","Régional","Départemental","International","Open"];
+
+function CompStatusBadge({ dateStr }) {
+  if (!dateStr) return null;
+  const parts = dateStr.split("/");
+  if (parts.length < 3) return <span className="ff-comp-status soon">À venir</span>;
+  const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+  const now = new Date();
+  const diff = (d - now) / (1000 * 60 * 60 * 24);
+  if (diff < -2) return <span className="ff-comp-status closed">Terminée</span>;
+  if (diff < 0)  return <span className="ff-comp-status live">EN COURS</span>;
+  if (diff < 14) return <span className="ff-comp-status soon">Bientôt</span>;
+  return <span className="ff-comp-status open">Inscriptions ouvertes</span>;
+}
+
+// ─── Gemini API key helpers ───────────────────────────────────────────────────
+const GEMINI_KEY_LS = "defcon_gemini_key";
+function getGeminiKey() { return localStorage.getItem(GEMINI_KEY_LS) || ""; }
+function saveGeminiKey(k) { localStorage.setItem(GEMINI_KEY_LS, k.trim()); }
+
+async function fetchFFCompetitions({ keyword, discipline, region, niveau, dateFrom }) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) throw new Error("CLE_MANQUANTE");
+
+  const filters = [];
+  if (discipline && discipline !== "Toutes") filters.push(`discipline: ${discipline}`);
+  if (region && region !== "Toutes") filters.push(`région: ${region}`);
+  if (niveau && niveau !== "Tous") filters.push(`niveau: ${niveau}`);
+  if (keyword) filters.push(`mot-clé: ${keyword}`);
+  if (dateFrom) filters.push(`à partir du: ${dateFrom}`);
+  const filterStr = filters.length ? `avec les filtres suivants: ${filters.join(", ")}` : "toutes disciplines et régions confondues";
+
+  const prompt = `Tu es un assistant spécialisé en compétitions de force et powerlifting en France.
+Recherche sur le web les compétitions FFForce (Fédération Française de Force) ${filterStr} pour 2025-2026.
+Consulte le site https://monespace.ffforce.org/manifestations/liste et le site officiel ffforce.fr.
+Retourne UNIQUEMENT un JSON valide (sans markdown, sans explication) sous cette forme exacte:
+{"competitions":[{"id":"unique_id","nom":"NOM","discipline":"FA/PL/DC/BP","niveau":"National/Régional/International/Open","date":"JJ/MM/AAAA","date_fin":"JJ/MM/AAAA ou null","lieu":"Ville","departement":"Département","region":"Région","club_organisateur":"Nom du club","responsable":"Prénom Nom","contact":"email ou tel","lien":"URL si disponible","categories":["Open","Jeunes","Masters"],"statut":"ouvert/fermé/bientôt"}],"total":0,"source":"FFForce monespace / ffforce.fr","date_maj":"date de mise à jour"}
+Donne au moins 6 compétitions réelles et vérifiées si disponibles, sinon donne les plus récentes trouvées.`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { maxOutputTokens: 3000 }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    const msg = err?.error?.message || `Erreur ${response.status}`;
+    if (response.status === 400 && msg.toLowerCase().includes("api key")) throw new Error("Clé API Gemini invalide. Vérifiez votre clé.");
+    if (response.status === 403) throw new Error("Clé API Gemini refusée (403). Vérifiez qu'elle est bien activée sur Google AI Studio.");
+    throw new Error(`Gemini API: ${msg}`);
+  }
+
+  const data = await response.json();
+  const text = (data.candidates?.[0]?.content?.parts || [])
+    .filter(p => p.text).map(p => p.text).join("\n");
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("Pas de données JSON dans la réponse Gemini");
+  return JSON.parse(jsonMatch[0].replace(/```json|```/g, "").trim());
+}
+
+function FFApiKeyBanner({ onSaved }) {
+  const [key, setKey] = useState(getGeminiKey());
+  const [saved, setSaved] = useState(false);
+  function save() {
+    if (!key.trim()) return;
+    saveGeminiKey(key);
+    setSaved(true);
+    setTimeout(() => { setSaved(false); onSaved(); }, 900);
+  }
+  return (
+    <div style={{
+      background:"linear-gradient(135deg,rgba(58,123,213,0.10),rgba(58,123,213,0.04))",
+      border:"1px solid rgba(58,123,213,0.30)", padding:"18px 20px", margin:"16px 20px",
+      fontFamily:"'Barlow',sans-serif"
+    }}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <span style={{fontSize:16}}>🔑</span>
+        <div>
+          <div style={{fontSize:13,fontWeight:700,color:"var(--ff-text)"}}>Clé API Gemini requise</div>
+          <div style={{fontSize:11,color:"var(--ff-muted)",marginTop:2}}>
+            Gratuite · 1 500 requêtes/jour ·{" "}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer"
+              style={{color:"var(--ff-blue)",textDecoration:"underline"}}>
+              Obtenir ma clé sur aistudio.google.com →
+            </a>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <input
+          className="ff-field-input" style={{flex:1,fontFamily:"'DM Mono',monospace",fontSize:12}}
+          type="password" placeholder="AIza…" value={key}
+          onChange={e=>setKey(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&save()}
+        />
+        <button className="ff-search-btn" style={{padding:"9px 18px",fontSize:13}}
+          onClick={save} disabled={!key.trim()}>
+          {saved ? "✓ Enregistré" : "Enregistrer"}
+        </button>
+      </div>
+      <div style={{fontSize:10,color:"var(--ff-muted)",marginTop:8,opacity:0.7}}>
+        La clé est stockée uniquement dans votre navigateur (localStorage). Elle n'est jamais envoyée à un tiers.
+      </div>
+    </div>
+  );
+}
+
+function FFCalendarScreen() {
+  const [keyword, setKeyword] = useState("");
+  const [discipline, setDiscipline] = useState("Toutes");
+  const [region, setRegion] = useState("Toutes");
+  const [niveau, setNiveau] = useState("Tous");
+  const [dateFrom, setDateFrom] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(0);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+  const [searched, setSearched] = useState(false);
+  const [hasKey, setHasKey] = useState(!!getGeminiKey());
+  const [showKeyInput, setShowKeyInput] = useState(!getGeminiKey());
+
+  const steps = ["Connexion à Gemini AI","Recherche web Google en cours","Analyse des compétitions","Formatage des résultats"];
+
+  async function doSearch() {
+    if (!getGeminiKey()) { setShowKeyInput(true); return; }
+    setLoading(true); setError(null); setResults(null); setSearched(true); setStep(0);
+    const iv = setInterval(() => setStep(s => Math.min(s + 1, 3)), 900);
+    try {
+      const data = await fetchFFCompetitions({ keyword, discipline, region, niveau, dateFrom });
+      clearInterval(iv); setStep(4); setResults(data);
+    } catch (e) {
+      clearInterval(iv);
+      if (e.message === "CLE_MANQUANTE") { setShowKeyInput(true); setLoading(false); return; }
+      setError(e.message || "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function onKeySaved() { setHasKey(true); setShowKeyInput(false); }
+
+  return (
+    <div className="ff-screen">
+      <div className="ff-grid-bg"/>
+      <div className="ff-screen-header">
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+          <div>
+            <div className="ff-screen-title">Calendrier <span>FFForce</span></div>
+            <div className="ff-screen-desc">Données en temps réel via Gemini AI + Google Search (gratuit)</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div className="ff-ai-badge"><span className="ff-ai-dot"/>Gemini + Web</div>
+            <button onClick={()=>setShowKeyInput(v=>!v)}
+              title="Paramétrer la clé API"
+              style={{background:"rgba(58,123,213,0.10)",border:"1px solid rgba(58,123,213,0.25)",
+                color:"var(--ff-blue)",cursor:"pointer",padding:"5px 10px",fontSize:13,
+                fontFamily:"'Barlow',sans-serif",letterSpacing:0}}>
+              {hasKey ? "🔑" : "⚠️ Clé"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {showKeyInput && <FFApiKeyBanner onSaved={onKeySaved}/>}
+
+      {!showKeyInput && (
+        <>
+          <div className="ff-search-area">
+            <div className="ff-search-row">
+              <div className="ff-field-group" style={{flex:2}}>
+                <label className="ff-field-label">Recherche libre</label>
+                <input className="ff-field-input" placeholder="Nom, ville, club…" value={keyword}
+                  onChange={e=>setKeyword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doSearch()}/>
+              </div>
+              <div className="ff-field-group">
+                <label className="ff-field-label">Discipline</label>
+                <select className="ff-field-select" value={discipline} onChange={e=>setDiscipline(e.target.value)}>
+                  {FF_DISCIPLINES.map(d=><option key={d}>{d}</option>)}
+                </select>
+              </div>
+              <div className="ff-field-group">
+                <label className="ff-field-label">Région</label>
+                <select className="ff-field-select" value={region} onChange={e=>setRegion(e.target.value)}>
+                  {FF_REGIONS.map(r=><option key={r}>{r}</option>)}
+                </select>
+              </div>
+              <div className="ff-field-group">
+                <label className="ff-field-label">Niveau</label>
+                <select className="ff-field-select" value={niveau} onChange={e=>setNiveau(e.target.value)}>
+                  {FF_NIVEAUX.map(n=><option key={n}>{n}</option>)}
+                </select>
+              </div>
+              <div className="ff-field-group">
+                <label className="ff-field-label">À partir du</label>
+                <input className="ff-field-input" type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)}/>
+              </div>
+              <button className="ff-search-btn" onClick={doSearch} disabled={loading}>
+                {loading?"⏳":"🔍"} Rechercher
+              </button>
+            </div>
+          </div>
+          <div className="ff-results-area">
+            {loading&&(
+              <div className="ff-loading-wrap">
+                <div className="ff-spinner"/>
+                <div className="ff-loading-text">Recherche en cours…</div>
+                <div className="ff-loading-steps">
+                  {steps.map((s,i)=>(
+                    <div key={i} className={`ff-loading-step ${step>i?"done":step===i?"active":""}`}>
+                      <div className="dot"/>{s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {error&&(
+              <div className="ff-empty-state">
+                <div className="ff-empty-icon">⚠️</div>
+                <div className="ff-empty-title">Erreur de chargement</div>
+                <div className="ff-empty-desc" style={{color:"var(--ff-accent)"}}>{error}</div>
+              </div>
+            )}
+            {!loading&&!error&&results&&(
+              <>
+                <div className="ff-results-meta">
+                  <div className="ff-results-count">
+                    <strong>{results.competitions?.length??0}</strong> compétition(s) trouvée(s)
+                    {results.source&&<span> · {results.source}</span>}
+                  </div>
+                  {results.date_maj&&<div style={{fontSize:11,color:"var(--ff-muted)"}}>MAJ: {results.date_maj}</div>}
+                </div>
+                {(!results.competitions||results.competitions.length===0)?(
+                  <div className="ff-empty-state">
+                    <div className="ff-empty-icon">🏋️</div>
+                    <div className="ff-empty-title">Aucun résultat</div>
+                    <div className="ff-empty-desc">Modifiez vos filtres ou élargissez votre recherche.</div>
+                  </div>
+                ):(
+                  <div className="ff-comp-grid">
+                    {results.competitions.map((c,idx)=>(
+                      <div className="ff-comp-card" key={c.id??idx} style={{animationDelay:`${idx*.06}s`}}>
+                        <div className="ff-comp-card-top">
+                          <span className="ff-comp-discipline">{c.discipline}</span>
+                          <span className="ff-comp-level">{c.niveau}</span>
+                        </div>
+                        <div className="ff-comp-name">{c.nom}</div>
+                        <div className="ff-comp-details">
+                          {c.date&&<div className="ff-comp-detail"><span className="icon">📅</span><span><strong>{c.date}</strong>{c.date_fin&&c.date_fin!==c.date&&` → ${c.date_fin}`}</span></div>}
+                          {c.lieu&&<div className="ff-comp-detail"><span className="icon">📍</span><span><strong>{c.lieu}</strong>{c.region&&` · ${c.region}`}</span></div>}
+                          {c.club_organisateur&&<div className="ff-comp-detail"><span className="icon">🏟️</span><span>{c.club_organisateur}</span></div>}
+                          {c.responsable&&<div className="ff-comp-detail"><span className="icon">👤</span><span>{c.responsable}</span></div>}
+                          {c.contact&&<div className="ff-comp-detail"><span className="icon">✉️</span><span style={{fontSize:11}}>{c.contact}</span></div>}
+                          {c.categories&&c.categories.length>0&&<div className="ff-comp-detail"><span className="icon">🏆</span><span style={{fontSize:11}}>{c.categories.join(" · ")}</span></div>}
+                        </div>
+                        <div className="ff-comp-card-footer">
+                          <CompStatusBadge dateStr={c.date}/>
+                          {c.lien&&<button className="ff-comp-link" onClick={()=>window.open(c.lien,"_blank")}>Voir détails →</button>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {!loading&&!error&&!searched&&(
+              <div className="ff-empty-state">
+                <div className="ff-empty-icon">🔍</div>
+                <div className="ff-empty-title">Lancez une recherche</div>
+                <div className="ff-empty-desc">
+                  Utilisez les filtres ci-dessus pour trouver des compétitions FFForce.<br/>
+                  Les données sont récupérées en temps réel via Gemini AI + Google Search.
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── AthletePicker ────────────────────────────────────────────────────────────
+function AthletePicker({matches,onPick,onBack}){
+  const{C}=useTheme();
+  return(
+    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{borderBottom:`1px solid ${C.border}`,flexShrink:0,background:C.headerBg,backdropFilter:"blur(16px)"}}>
+        <div style={{padding:"13px 16px 13px"}}>
+          <button onClick={onBack} style={{background:"transparent",border:"none",color:C.muted,fontSize:11,padding:0,marginBottom:12,fontWeight:600,cursor:"pointer",letterSpacing:"0.04em"}}>← retour</button>
+          <div style={{fontSize:20,fontWeight:800,color:C.text,letterSpacing:"0.02em"}}>Plusieurs profils</div>
+          <div style={{fontSize:12,color:C.muted,marginTop:4}}>Sélectionne le bon profil :</div>
+        </div>
+      </div>
+      <div className="scrollable" style={{flex:1,padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
+        {matches.map(({comp,athlete},i)=>{
+          const group=comp.groups?.find(g=>g.id===athlete.groupId);const d=daysUntil(comp.date);
+          return(<button key={i} onClick={()=>onPick(comp,athlete)}
+            style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:"15px 16px",textAlign:"left",display:"flex",flexDirection:"column",gap:6,width:"100%"}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.text}}>{athlete.name}</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.gold,letterSpacing:"0.01em"}}>{comp.name}</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:10,color:C.muted}}>{comp.date?formatDate(comp.date):"Date non définie"}</span>
+              {d!==null&&<span style={{fontSize:9,fontWeight:700,letterSpacing:"0.06em",color:d===0?C.red:d>0?C.gold:C.muted,background:d===0?C.redDim:d>0?C.goldDim:C.surface2,border:`1px solid ${d===0?C.redBorder:d>0?C.goldBorder:C.border}`,borderRadius:6,padding:"2px 8px"}}>{d===0?"AUJOURD'HUI":d>0?`J-${d}`:`J+${Math.abs(d)}`}</span>}
+              <span style={{fontSize:10,color:C.muted}}>{group?.name||"Groupe 1"}</span>
+            </div>
+          </button>);
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── FFReglementScreen ─────────────────────────────────────────────────────
+// Source : Règlement IPF 2025 – Version française officielle (16 mars 2025)
+//          publié sur powerlifting.sport et ffforce.fr
+const REGLEMENT_SECTIONS = [
+  {
+    id:"arbitrage", icon:"⚖️", color:"#d4a843", title:"Lumières & Cartons",
+    rules:[
+      { id:"arb-lum", icon:"💡", title:"Système lumineux — lumière blanche / rouge",
+        body:`<strong>Chaque arbitre dispose de deux boutons :</strong>
+<ul>
+<li><span class="rgl-tag rgl-lumiere-blanc">● Blanc</span> = essai <strong>accordé</strong> (bon lift)</li>
+<li><span class="rgl-tag rgl-lumiere-rouge">● Rouge</span> = essai <strong>refusé</strong> (no lift)</li>
+</ul>
+Les 3 lumières s'allument <strong>simultanément</strong> (jamais séparément).<br>
+Un essai est validé avec <strong>au minimum 2 lumières blanches sur 3</strong>.<br><br>
+<strong>En cas de panne électrique</strong>, les arbitres utilisent des fanions blancs ou rouges au signal « Flags » de l'arbitre chef de plateau.` },
+      { id:"arb-cartons", icon:"🎴", title:"Cartons d'essais — raison de l'échec",
+        body:`Après l'allumage des lumières, <strong>chaque arbitre ayant refusé</strong> un essai lève un carton numéroté pour indiquer la <strong>raison précise</strong> du refus.<br><br>
+<strong>Important :</strong> ces cartons ne sont PAS 3 niveaux de gravité différents. Ce sont simplement 3 numéros identifiant une faute dans une liste. Un carton jaune est un refus au même titre qu'un rouge ou qu'un bleu.<br><br>
+<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:90px;padding:10px 8px;text-align:center;border:1px solid var(--ff-border);">
+    <div style="font-size:22px;margin-bottom:4px;">🟥</div>
+    <div style="font-size:10px;font-weight:700;color:#e63946;letter-spacing:1px;">CARTON ROUGE</div>
+    <div style="font-size:10px;color:var(--ff-muted);margin-top:3px;font-family:'Barlow',sans-serif;">Echec n°1</div>
+  </div>
+  <div style="flex:1;min-width:90px;padding:10px 8px;text-align:center;border:1px solid var(--ff-border);">
+    <div style="font-size:22px;margin-bottom:4px;">🟦</div>
+    <div style="font-size:10px;font-weight:700;color:#3a7bd5;letter-spacing:1px;">CARTON BLEU</div>
+    <div style="font-size:10px;color:var(--ff-muted);margin-top:3px;font-family:'Barlow',sans-serif;">Echec n°2</div>
+  </div>
+  <div style="flex:1;min-width:90px;padding:10px 8px;text-align:center;border:1px solid var(--ff-border);">
+    <div style="font-size:22px;margin-bottom:4px;">🟨</div>
+    <div style="font-size:10px;font-weight:700;color:#f4a522;letter-spacing:1px;">CARTON JAUNE</div>
+    <div style="font-size:10px;color:var(--ff-muted);margin-top:3px;font-family:'Barlow',sans-serif;">Echec n°3</div>
+  </div>
+</div>` },
+    ]
+  },
+  {
+    id:"squat", icon:"🦵", color:"#f0a020", title:"Flexion de Jambes (Squat)",
+    rules:[
+      { id:"sq-desc", icon:"📌", title:"Description officielle du mouvement",
+        body:`<ul>
+<li>L'arbitre chef de plateau donne le signal de départ : ordre verbal <strong>« Squat »</strong> accompagné d'un mouvement du bras vers le bas.</li>
+<li>Avant le signal, l'athlète peut rectifier sa position sans être sanctionné.</li>
+<li>Après le signal, l'athlète doit fléchir les genoux et abaisser le corps jusqu'à ce que la <strong>surface supérieure des cuisses à l'articulation de la hanche soit plus basse que le sommet des genoux</strong>.</li>
+<li>Remonter jusqu'à la position droite, genoux verrouillés.</li>
+<li>Attendre le signal de repose-barre : ordre verbal <strong>« Rack »</strong> accompagné d'un mouvement du bras vers l'arrière.</li>
+<li>Le signal de repose-barre est donné dès que l'athlète est en position debout et immobile.</li>
+</ul>` },
+      { id:"sq-cartons", icon:"🚫", title:"Raisons de refus — cartons officiels",
+        body:`<strong>Carton Rouge (Echec n°1) :</strong>
+<ul><li>Ne pas fléchir les genoux et abaisser le tronc jusqu'à ce que la surface supérieure des cuisses à l'articulation de la hanche soit <strong>plus basse que le sommet des genoux</strong>.</li></ul>
+<strong>Carton Bleu (Echec n°2) :</strong>
+<ul>
+<li>Ne pas maintenir une position droite genoux verrouillés <strong>au début et à la fin</strong> de la flexion de jambes.</li>
+<li>Double rebond ou plus d'une tentative de remontée dans la position basse, ou tout mouvement vers le bas de la barre pendant la montée.</li>
+</ul>
+<strong>Carton Jaune (Echec n°3) :</strong>
+<ul>
+<li>Tout pas en avant, en arrière ou latéral. (<em>Cependant, tout décollement des orteils ou des talons est autorisé.</em>)</li>
+<li>Non-respect des signaux de l'arbitre chef de plateau au début ou à la fin.</li>
+<li>Contact de la barre ou du concurrent avec les suiveurs-chargeurs entre les signaux de l'arbitre chef de plateau, afin de faciliter l'essai.</li>
+<li>Contact des coudes ou des bras avec les jambes, si cela aide l'athlète (<em>un contact léger sans aide peut être ignoré</em>).</li>
+<li>Non-respect de toute autre exigence contenue dans la description générale du mouvement.</li>
+</ul>` },
+    ]
+  },
+  {
+    id:"bench", icon:"💪", color:"#6092e8", title:"Développé Couché (Bench Press)",
+    rules:[
+      { id:"bp-desc", icon:"📌", title:"Description officielle du mouvement",
+        body:`<ul>
+<li>L'athlète s'allonge sur le dos, épaules et fesses en contact avec le banc. Les pieds doivent être <strong>à plat au sol</strong> ou sur cales réglementaires.</li>
+<li>Écartement maximal : les <strong>index à l'intérieur des repères à 81 cm</strong> de la barre.</li>
+<li>Après dépose de la barre depuis les supports, l'athlète attend le signal « Start » de l'arbitre chef de plateau (mouvement du bras vers le bas).</li>
+<li>Abaisser la barre jusqu'à toucher la <strong>poitrine ou la zone abdominale</strong>.</li>
+<li>Maintenir la barre <strong>immobile sur la poitrine</strong>, puis attendre le signal <strong>« Press »</strong>.</li>
+<li>Repousser la barre jusqu'à l'<strong>extension complète des coudes</strong>.</li>
+<li>Attendre le signal <strong>« Rack »</strong> avant de reposer la barre.</li>
+</ul>` },
+      { id:"bp-cartons", icon:"🚫", title:"Raisons de refus — cartons officiels",
+        body:`<strong>Carton Rouge (Echec n°1) :</strong>
+<ul>
+<li>La barre ne touche pas la poitrine, ou ne touche pas la zone abdominale, ou touche la ceinture.</li>
+<li>Ne pas baisser les deux coudes (au niveau de leur articulation) <strong>au niveau ou au-dessous du haut de l'articulation de l'épaule respective</strong>.</li>
+</ul>
+<strong>Carton Bleu (Echec n°2) :</strong>
+<ul>
+<li>Tout mouvement de l'ensemble de la barre vers le bas pendant la poussée.</li>
+<li>Ne pas pousser la barre jusqu'au <strong>blocage des coudes</strong> à la fin du développé couché.</li>
+<li>Ne pas verrouiller les bras avant le signal <strong>« Start »</strong>.</li>
+<li>Balancement ou enfoncement de la barre après immobilité sur la poitrine, afin d'aider l'athlète.</li>
+<li>Utilisation d'une poussée du haut du corps pour initier le mouvement vers le haut depuis la poitrine.</li>
+<li>Tout changement de position pendant l'essai : soulèvement de la tête, des épaules ou des fesses, ou déplacement latéral des mains sur la barre.</li>
+<li>Tout contact des pieds de l'athlète avec le banc ou ses supports.</li>
+<li>Contact délibéré de la barre avec les sécurités du banc pour faciliter l'essai.</li>
+</ul>
+<strong>Carton Jaune (Echec n°3) :</strong>
+<ul>
+<li>Contact de la barre ou du concurrent avec les suiveurs-chargeurs entre les signaux de l'arbitre chef de plateau, afin de faciliter l'essai.</li>
+<li>Laisser tomber ou relâcher la barre après la fin de l'essai.</li>
+<li>Non-respect des signaux de l'arbitre chef de plateau au début, pendant ou à la fin de l'essai.</li>
+<li>Non-respect de toute autre exigence contenue dans la description générale du mouvement.</li>
+</ul>` },
+    ]
+  },
+  {
+    id:"deadlift", icon:"🏋️", color:"#e85858", title:"Soulevé de Terre (Deadlift)",
+    rules:[
+      { id:"dl-desc", icon:"📌", title:"Description officielle du mouvement",
+        body:`<ul>
+<li>L'athlète se place face à la barre, les bras tendus, prise libre (pronation, mixte, sumo ou conventionnel).</li>
+<li>Soulever la barre depuis le sol jusqu'à la <strong>position debout complète</strong> : genoux verrouillés, épaules en arrière.</li>
+<li>Le signal de l'arbitre chef de plateau consiste en un mouvement du bras vers le bas accompagné du verbal <strong>« Down »</strong>.</li>
+<li>Le signal n'est donné que lorsque la barre est immobile et que l'athlète est en position finale apparente.</li>
+<li>Reposer la barre au sol après le signal « Down ».</li>
+</ul>` },
+      { id:"dl-cartons", icon:"🚫", title:"Raisons de refus — cartons officiels",
+        body:`<strong>Carton Rouge (Echec n°1) :</strong>
+<ul>
+<li>Ne pas verrouiller les genoux à la fin du soulevé de terre.</li>
+<li>Ne pas se tenir droit avec les épaules en arrière.</li>
+</ul>
+<strong>Carton Bleu (Echec n°2) :</strong>
+<ul>
+<li>Tout mouvement de la barre vers le bas avant qu'elle n'atteigne la position finale. (<em>Si la barre se repositionne quand les épaules descendent, l'essai n'est pas refusé.</em>)</li>
+<li>S'aider des cuisses pour <strong>soutenir</strong> la barre pendant l'exécution. (<em>Si la barre frotte les cuisses en montant sans être soutenue, l'essai n'est pas refusé.</em>)</li>
+</ul>
+<strong>Carton Jaune (Echec n°3) :</strong>
+<ul>
+<li>Reposer la barre avant d'avoir reçu le signal <strong>« Down »</strong>.</li>
+<li>Laisser la barre revenir au sol sans maintenir le contrôle avec les deux mains (relâcher la barre des paumes).</li>
+<li>Tout pas en avant, en arrière ou latéral. (<em>Décollements des orteils ou talons autorisés. Mouvement des pieds après le signal « Down » n'est pas une cause de refus.</em>)</li>
+<li>Non-respect de toute autre exigence contenue dans la description générale du mouvement.</li>
+</ul>` },
+    ]
+  },
+  {
+    id:"categories", icon:"📊", color:"#3a7bd5", title:"Catégories de poids & d'âge",
+    rules:[
+      { id:"cat-age", icon:"🎂", title:"Catégories d'âge (IPF 2025)",
+        body:`<table>
+<tr><th>Catégorie</th><th>Âge</th></tr>
+<tr><td><strong>Sub-Juniors</strong></td><td>Du jour des 14 ans jusqu'au 31 déc. inclus de l'année des 18 ans</td></tr>
+<tr><td><strong>Juniors</strong></td><td>Du 1er jan. de l'année des 19 ans jusqu'au 31 déc. inclus de l'année des 23 ans</td></tr>
+<tr><td><strong>Open</strong></td><td>Du 1er jan. de l'année des 19 ans et au-delà (sans limite)</td></tr>
+<tr><td><strong>Master 1</strong></td><td>Du 1er jan. de l'année des 40 ans jusqu'au 31 déc. inclus de l'année des 49 ans</td></tr>
+<tr><td><strong>Master 2</strong></td><td>50 ans → 59 ans</td></tr>
+<tr><td><strong>Master 3</strong></td><td>60 ans → 69 ans</td></tr>
+<tr><td><strong>Master 4</strong></td><td>Du 1er jan. de l'année des 70 ans et au-delà</td></tr>
+</table>
+<ul style="margin-top:10px">
+<li>Les compétitions pour les moins de 14 ans peuvent être organisées par les fédérations nationales.</li>
+<li>Masters 3 & 4 ne sont pas autorisés à participer en catégorie Open.</li>
+</ul>` },
+      { id:"cat-poids", icon:"⚖️", title:"Catégories de poids (IPF 2025)",
+        body:`<table>
+<tr><th>Messieurs Open/Masters</th><th>Messieurs Sub-jun./Juniors</th></tr>
+<tr><td>59 kg</td><td>53 kg (Sub-jun./Jun. seulement)</td></tr>
+<tr><td>66 kg</td><td>59 kg</td></tr>
+<tr><td>74 kg</td><td>66 kg</td></tr>
+<tr><td>83 kg</td><td>74 kg</td></tr>
+<tr><td>93 kg</td><td>83 kg</td></tr>
+<tr><td>105 kg</td><td>93 kg</td></tr>
+<tr><td>120 kg</td><td>105 kg</td></tr>
+<tr><td>+120 kg</td><td>120 kg · +120 kg</td></tr>
+</table>
+<table style="margin-top:10px">
+<tr><th>Dames Open/Masters</th><th>Dames Sub-jun./Juniors</th></tr>
+<tr><td>47 kg</td><td>43 kg (Sub-jun./Jun. seulement)</td></tr>
+<tr><td>52 kg</td><td>47 kg</td></tr>
+<tr><td>57 kg</td><td>52 kg</td></tr>
+<tr><td>63 kg</td><td>57 kg</td></tr>
+<tr><td>69 kg</td><td>63 kg</td></tr>
+<tr><td>76 kg</td><td>69 kg</td></tr>
+<tr><td>84 kg</td><td>76 kg</td></tr>
+<tr><td>+84 kg</td><td>84 kg · +84 kg</td></tr>
+</table>` },
+      { id:"cat-classement", icon:"🏆", title:"Classement — règles officielles",
+        body:`<ul>
+<li>Chaque athlète dispose de <strong>3 essais par épreuve</strong>. Le meilleur essai réussi pour chaque épreuve compte pour le total.</li>
+<li>En cas d'égalité de total : le <strong>plus léger</strong> est classé premier.</li>
+<li>En cas d'égalité de total ET de poids de corps : celui qui a <strong>réalisé son total en premier</strong> est classé premier.</li>
+<li>Si un athlète rate ses 3 essais à la flexion de jambes ou au développé couché, il peut continuer la compétition pour gagner un titre dans un mouvement individuel — à condition de faire de véritables tentatives dans les 3 disciplines.</li>
+</ul>` },
+    ]
+  },
+  {
+    id:"deroulement", icon:"📋", color:"#a855f7", title:"Déroulement de la Compétition",
+    rules:[
+      { id:"der-ordre", icon:"🔢", title:"Ordre de passage & temps imparti",
+        body:`<ul>
+<li>Chaque athlète dispose d'<strong>1 minute</strong> à partir de l'appel de son nom pour commencer l'essai. Le chrono s'arrête quand l'athlète commence correctement l'essai.</li>
+<li>L'ordre de passage est déterminé par la charge demandée, du plus léger au plus lourd.</li>
+<li>En cas d'égalité de charge, c'est le <strong>numéro de lot</strong> (tiré au sort avant compétition) qui détermine l'ordre.</li>
+<li>Les charges suivantes doivent être communiquées dans le délai imparti après chaque essai.</li>
+</ul>` },
+      { id:"der-erreur", icon:"⚠️", title:"Erreur de chargement & appel",
+        body:`<ul>
+<li>Si la barre est chargée de façon incorrecte et que l'essai a débuté, le résultat est accordé si l'athlète réussit le mouvement ; l'erreur est corrigée pour les essais suivants.</li>
+<li>Si une erreur est constatée avant l'essai, la barre est rechargée correctement et le temps est recommencé.</li>
+<li>Tout appel concernant une décision d'arbitrage doit être formulé dans un délai strict par le représentant officiel de l'équipe auprès du jury.</li>
+</ul>` },
+      { id:"der-conduite", icon:"🚩", title:"Conduite sportive — carte jaune de comportement",
+        body:`<strong>Attention : ceci est différent des cartons d'échec techniques.</strong><br><br>
+Un arbitre peut donner une <strong>carte jaune de comportement</strong> à un athlète en cas de :<br><br>
+<ul>
+<li>Comportement antisportif ou discourtois sur le plateau.</li>
+<li>Non-respect répété des consignes des officiels.</li>
+</ul>
+<strong>Deux cartes jaunes de comportement</strong> dans la même compétition entraînent une <strong>disqualification</strong>.` },
+    ]
+  },
+  {
+    id:"equipement", icon:"🥋", color:"#22c55e", title:"Équipement personnel",
+    rules:[
+      { id:"eq-tenue", icon:"👕", title:"Tenue obligatoire",
+        body:`<strong>Combinaison (singlet / maillot) :</strong>
+<ul>
+<li>Le singlet (combinaison sans assistance) doit être porté en compétition <em>Force Athlétique / Classic</em>. Les bretelles doivent être sur les épaules en permanence.</li>
+<li>Un <strong>t-shirt</strong> doit être porté sous le singlet. Les manches doivent finir sous le deltoïde et ne pas atteindre le coude.</li>
+<li>Seul le matériel figurant sur la <strong>liste IPF approuvée</strong> (mise à jour chaque année) est autorisé aux compétitions nationales et internationales.</li>
+<li>En compétition <em>Powerlifting Equipé</em>, une combinaison de squat avec assistance est autorisée.</li>
+</ul>` },
+      { id:"eq-accessoires", icon:"🎽", title:"Accessoires autorisés",
+        body:`<ul>
+<li><strong>Ceinture</strong> : portée à l'extérieur du singlet, homologuée IPF.</li>
+<li><strong>Genouillères (knee sleeves)</strong> : pas de marques imposées mais doivent être conformes au règlement IPF. Longueur max : <strong>30 cm</strong> chacune. Portées par-dessus le singlet. Combinaison genouillères + bandes de genoux <strong>interdite</strong>.</li>
+<li><strong>Bandes de poignets (wrist wraps)</strong> : conformes au règlement IPF. Un seul tour de poignet est autorisé pour le début de la bande.</li>
+<li><strong>Bandes de genoux (wraps)</strong> : autorisées uniquement en catégorie <em>Powerlifting Equipé</em>.</li>
+<li><strong>Magnésie (carbonate de magnésium)</strong>, talc, résine, poudre : autorisés.</li>
+<li><strong>Chaussures</strong> : toutes les chaussures de sport intérieur sans crampons sont autorisées (FFForce 2025). Les semelles non plates ne sont pas refusées au contrôle mais l'arbitre peut refuser l'essai si les pieds ne sont pas à plat au sol.</li>
+</ul>` },
+      { id:"eq-interdits", icon:"🚫", title:"Équipements interdits",
+        body:`<ul>
+<li>Huile, graisse ou lubrifiant sur le corps ou le matériel (<em>strictement interdit</em>).</li>
+<li>Toute combinaison ou chemise avec assistance en catégorie <em>Classic/Force Athlétique</em>.</li>
+<li>Chaussettes longues atteignant les bandes de genoux ou les genouillères.</li>
+<li>Collants ou bas de contention sur toute la jambe (strictement interdits).</li>
+<li>Tout matériel non présent sur la liste IPF approuvée pour les compétitions nationales qualificatives et les finales France.</li>
+</ul>` },
+    ]
+  },
+];
+
+function FFReglementScreen() {
+  const { C } = useTheme();
+  const [activeSec, setActiveSec] = React.useState("arbitrage");
+  const [openRule, setOpenRule] = React.useState(null);
+
+  // Mappe les couleurs de section sur le thème courant (dark/light)
+  const SEC_COLORS = {
+    arbitrage:  C.gold,
+    squat:      C.squat,
+    bench:      C.bench,
+    deadlift:   C.deadlift,
+    categories: C.blue,
+    deroulement:"#a855f7",
+    equipement: C.green,
+  };
+
+  // Injecte les variables CSS --rgl-* pour que les classes CSS suivent le thème
+  const cssVars = {
+    "--rgl-surface":   C.surface,
+    "--rgl-border":    C.border,
+    "--rgl-text":      C.text,
+    "--rgl-muted":     C.muted,
+    "--rgl-accent":    C.gold,
+    "--rgl-headerbg":  C.headerBg,
+  };
+
+  const section = REGLEMENT_SECTIONS.find(s => s.id === activeSec);
+  const secColor = SEC_COLORS[activeSec] || C.gold;
+
+  return (
+    <div className="rgl-screen" style={cssVars}>
+      {/* Header */}
+      <div style={{padding:"14px 16px 10px",borderBottom:`1px solid ${C.border}`,background:C.headerBg,flexShrink:0,position:"relative",zIndex:1}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:900,fontSize:20,letterSpacing:".5px",textTransform:"uppercase",color:C.text}}>
+          Règlement <span style={{color:C.gold}}>FFForce</span>
+        </div>
+        <div style={{fontSize:11,color:C.muted,marginTop:2,fontFamily:"'Barlow',sans-serif"}}>
+          Règlement IPF 2025 — version française officielle
+        </div>
+      </div>
+
+      {/* Onglets de section — scroll horizontal */}
+      <div style={{display:"flex",overflowX:"auto",borderBottom:`1px solid ${C.border}`,background:C.bg2,flexShrink:0,scrollbarWidth:"none",position:"relative",zIndex:1}}>
+        {REGLEMENT_SECTIONS.map(sec=>{
+          const isAct = activeSec===sec.id;
+          const col   = SEC_COLORS[sec.id] || C.gold;
+          return(
+            <button key={sec.id}
+              onClick={()=>{setActiveSec(sec.id);setOpenRule(null);}}
+              style={{flexShrink:0,padding:"10px 14px",background:"transparent",border:"none",
+                borderBottom:isAct?`2px solid ${col}`:"2px solid transparent",
+                color:isAct?col:C.muted,cursor:"pointer",
+                display:"flex",alignItems:"center",gap:6,
+                fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,
+                letterSpacing:".5px",textTransform:"uppercase",
+                transition:"color .18s,border-color .18s",whiteSpace:"nowrap"}}>
+              <span style={{fontSize:14}}>{sec.icon}</span>{sec.title}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Liste des règles */}
+      <div className="rgl-content">
+        {section&&section.rules.map((rule,i)=>{
+          const isOpen=openRule===rule.id;
+          return(
+            <div key={rule.id}
+              className={`rgl-rule-card${isOpen?" open":""}`}
+              style={{animationDelay:`${i*.07}s`,
+                borderColor:isOpen?secColor:C.border,
+                background:isOpen?`${secColor}08`:C.surface}}>
+              <div className="rgl-rule-header"
+                onClick={()=>setOpenRule(isOpen?null:rule.id)}>
+                <span className="rgl-rule-icon">{rule.icon}</span>
+                <span className="rgl-rule-title"
+                  style={{color:isOpen?secColor:C.text}}>{rule.title}</span>
+                <span className="rgl-rule-chevron"
+                  style={{color:isOpen?secColor:C.muted}}>▼</span>
+              </div>
+              {isOpen&&(
+                <div className="rgl-rule-body"
+                  style={{borderTopColor:C.border,color:C.muted}}
+                  dangerouslySetInnerHTML={{__html:rule.body}}/>
+              )}
+            </div>
+          );
+        })}
+        <div style={{height:6}}/>
+      </div>
+
+      {/* Note source */}
+      <div style={{fontSize:10,color:C.muted,padding:"9px 16px",
+        borderTop:`1px solid ${C.border}`,textAlign:"center",
+        fontFamily:"'Barlow',sans-serif",flexShrink:0,background:C.bg2}}>
+        📖 Source : Règlement IPF 2025 (v2 — 16 mars 2025) · powerlifting.sport / ffforce.fr
+      </div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+function App(){
+  const[darkMode,setDarkMode]=useState(()=>localStorage.getItem("defcon_theme")!=="light");
+  const[notifGranted,setNotifGranted]=useState(()=>{try{return Notification?.permission==="granted";}catch(e){return false;}});
+  function reqNotifs(){
+    initAudio();
+    // ── Détection iOS ──────────────────────────────────────────────────────────
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone === true;
+    if(isIOS && !isStandalone){
+      alert("📱 iPhone / iPad détecté\n\nLes notifications ne fonctionnent que si l'app est installée sur l'écran d'accueil.\n\nComment faire :\n1. Appuie sur ⬆️ (Partager) dans Safari\n2. Sélectionne « Sur l'écran d'accueil »\n3. Ouvre l'app depuis l'écran d'accueil\n4. Reviens ici pour activer les notifications");
+      return;
+    }
+    // ── Vérifications standard ─────────────────────────────────────────────────
+    if(!("Notification" in window)){alert("Les notifications ne sont pas supportées sur cet appareil.");return;}
+    if(Notification.permission==="granted"){setNotifGranted(true);return;}
+    if(Notification.permission==="denied"){alert("Notifications bloquées.\n\niOS : Réglages > Apps > Safari > Notifications\nAutres : réglages du navigateur.");return;}
+    try{
+      const r=Notification.requestPermission(function(p){setNotifGranted(p==="granted");});
+      if(r&&typeof r.then==="function")r.then(p=>setNotifGranted(p==="granted")).catch(()=>{});
+    }catch(e){}
+  }
+  const C=darkMode?DARK:LIGHT;
+  const styles=useMemo(()=>makeStyles(C),[darkMode]);
+  const themeValue={C,...styles,darkMode,setDarkMode};
+  useEffect(()=>{document.body.style.background=C.bg;document.body.style.color=C.text;document.body.className=darkMode?"":"light-mode";},[darkMode]);
+  function toggleTheme(){const nd=!darkMode;setDarkMode(nd);localStorage.setItem("defcon_theme",nd?"dark":"light");}
+
+  const[config,setConfig]=useState(null);
+  const[rosterProfile,setRosterProfile]=useState(null);
+  const[showProfile,setShowProfile]=useState(false);
+  const[loading,setLoading]=useState(true);
+  const[autoErr,setAutoErr]=useState(""); // erreur lors de la reconnexion auto
+  const[comps,setComps]=useState([]);
+  const[selCompId,setSelCompId]=useState(null);
+  const[selAthleteId,setSelAthleteId]=useState(null);
+  const[matches,setMatches]=useState(null);
+  const[compChoices,setCompChoices]=useState(null); // compétitions dispo pour l'athlète connecté
+  const[homeTab,setHomeTab]=useState("competitions"); // "competitions" | "calendrier"
+  const[liveMode,setLiveMode]=useState(false);
+  const[selMov,setSelMov]=useState("squat");
+  // selTab supprimé : plus d'onglets dans la vue athlète
+  const[syncing,setSyncing]=useState(false);
+  const[syncErr,setSyncErr]=useState(false);
+
+  const isDirty=useRef(false);
+  const saveTimer=useRef(null);
+  const esRef=useRef(null);
+  const alertRef=useRef({});
+  const warnRef=useRef({});
+
+  // Auto-reconnexion
+  useEffect(()=>{
+    const url=FB_URL;
+    const code=localStorage.getItem("defcon_ath_code");
+    const name=localStorage.getItem("defcon_ath_name");
+    const storedRoster=localStorage.getItem("defcon_ath_roster");
+    if(storedRoster){try{setRosterProfile(JSON.parse(storedRoster));}catch{}}
+    const cId=localStorage.getItem("defcon_ath_compId");
+    const aId=localStorage.getItem("defcon_ath_athId");
+    if(code&&name){
+      fbGetDetailed(url,code).then(result=>{
+        if(result.error==="rules"){
+          setAutoErr("🔴 Firebase a refusé la connexion (erreur "+result.status+"). Les règles ont expiré — dis à ton coach de les renouveler dans la console Firebase.");
+          setLoading(false);return;
+        }
+        if(result.error==="timeout"||result.error==="network"){
+          setAutoErr("📡 Impossible de joindre Firebase. Vérifie ta connexion internet.");
+          setLoading(false);return;
+        }
+        if(result.data?.competitions){
+          const mg=result.data.competitions.map(migrateComp).filter(Boolean);
+          setComps(mg);setConfig({url,code});
+          // Retrouver toutes les compétitions de l'athlète par son nom
+          const nl=normalizeName(name);const found=[];
+          mg.forEach(comp=>comp.athletes.forEach(ath=>{if(normalizeName(ath.name)===nl)found.push({comp,athlete:ath});}));
+          if(found.length>0)setCompChoices(found);else findAthletes(mg,name);
+          subscribeFirebase({url,code});
+        }
+        setLoading(false);
+      });
+    }else{setLoading(false);}
+  },[]);
+
+  // Sauvegarde auto — lecture-fusion-écriture pour ne pas écraser les nouveaux athlètes du coach
+  useEffect(()=>{
+    if(!isDirty.current||!config||!comps.length)return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current=setTimeout(async()=>{
+      setSyncing(true);
+      try{
+        // 1. Lire la version la plus récente depuis Firebase
+        const latest=await fbGet(config.url,config.code);
+        const base=latest?.competitions?(latest.competitions.map(migrateComp).filter(Boolean)):comps;
+        // 2. Fusionner : on applique UNIQUEMENT les doneSets locaux sur la base Firebase
+        //    (qui peut contenir des athlètes créés par le coach après notre dernier chargement)
+        const merged=base.map(comp=>{
+          const localComp=comps.find(c=>c.id===comp.id);
+          if(!localComp)return comp;
+          return{
+            ...comp,
+            athletes:comp.athletes.map(ath=>{
+              const la=localComp.athletes.find(a=>a.id===ath.id);
+              if(!la)return ath;
+              return{
+                ...ath,
+                movements:{
+                  squat:{...ath.movements.squat,doneSets:la.movements.squat?.doneSets||{}},
+                  bench:{...ath.movements.bench,doneSets:la.movements.bench?.doneSets||{}},
+                  deadlift:{...ath.movements.deadlift,doneSets:la.movements.deadlift?.doneSets||{}},
+                }
+              };
+            })
+          };
+        });
+        // 3. Mettre à jour l'état local avec la version fusionnée (pour avoir les nouveaux athlètes)
+        setComps(merged);
+        // 4. Sauvegarder la version fusionnée
+        const ok=await fbSet(config.url,config.code,{competitions:merged,version:Date.now()});
+        setSyncing(false);setSyncErr(!ok);isDirty.current=false;
+      }catch{
+        // En cas d'erreur réseau, on sauvegarde quand même avec les données locales
+        const ok=await fbSet(config.url,config.code,{competitions:comps,version:Date.now()});
+        setSyncing(false);setSyncErr(!ok);isDirty.current=false;
+      }
+    },700);
+  },[comps,config]);
+
+  // Alertes audio en live
+  useEffect(()=>{
+    if(!liveMode||!selCompId||!selAthleteId)return;
+    const comp=comps.find(c=>c.id===selCompId);
+    const ath=comp?.athletes?.find(a=>a.id===selAthleteId);
+    if(!comp||!ath)return;
+    const mov=ath.movements[selMov];
+    const cs=getMovStartTime(comp,ath.groupId,selMov);
+    const sched=computeSchedule(mov,cs,mov.position||1,0);
+    const done=mov.doneSets||{};
+    const movName=selMov==="squat"?"Squat":selMov==="bench"?"Bench":"Deadlift";
+    const iv=setInterval(()=>{
+      const now=nowSeconds();
+      sched.forEach(sc=>{
+        const k=setKey(sc);if(done[k])return;
+        const diff=sc.startMin*60-now;
+        if(diff<=32&&diff>24&&!warnRef.current[k]){
+          warnRef.current[k]=true;playWarn();
+          const lbl=sc.type==="general"?"Éch. général":`Série ${sc.index+1}`;
+          const kgPart=sc.type==="warmup"&&sc.weight?` — ${sc.weight}kg`:"";
+          const title=`⏱️ ${ath.name} — ${movName}`;
+          const body=`${lbl}${kgPart} dans 30s`;
+          emitNotif({title,body,urgent:false});
+          if(notifGranted)trySystemNotif(title,body,`w-${ath.id}-${k}`);
+        }
+        if(diff<=3&&diff>-8&&!alertRef.current[k]){
+          alertRef.current[k]=true;playAlert();
+          try{if(navigator.vibrate)navigator.vibrate([300,150,300,150,500]);}catch(e){}
+          const lbl=sc.type==="general"?"Éch. général":`Série ${sc.index+1}`;
+          const kgPart=sc.type==="warmup"&&sc.weight?` ${sc.weight}kg`:sc.type==="general"?` (${sc.duration}min)`:"";
+          const title=`🚨 ${ath.name} — ${movName}`;
+          const body=`C'est l'heure ! ${lbl}${kgPart}`;
+          emitNotif({title,body,urgent:true});
+          if(notifGranted)trySystemNotif(title,body,`a-${ath.id}-${k}`);
+        }
+        if(diff<-40){delete alertRef.current[k];delete warnRef.current[k];}
+      });
+    },500);
+    return()=>clearInterval(iv);
+  },[liveMode,selMov,comps,selCompId,selAthleteId,notifGranted]);
+
+  function subscribeFirebase(cfg){
+    if(esRef.current){esRef.current.close();esRef.current=null;}
+    const url=`${cfg.url}/teams/${encodeURIComponent(cfg.code)}.json?alt=sse`;
+    try{
+      const es=new EventSource(url);esRef.current=es;
+      es.addEventListener("put",e=>{
+        try{
+          const{data}=JSON.parse(e.data);
+          if(data?.competitions){
+            const mg=data.competitions.map(migrateComp).filter(Boolean);
+            // Toujours appliquer les changements de timing/retard (vient du coach)
+            // mais préserver les doneSets locaux de l'athlète (ses séries cochées)
+            setComps(prev=>mg.map(newComp=>{
+              const oldComp=prev.find(c=>c.id===newComp.id);
+              if(!oldComp)return newComp;
+              return{
+                ...newComp,
+                athletes:newComp.athletes.map(na=>{
+                  const oa=oldComp.athletes.find(a=>a.id===na.id);
+                  if(!oa)return na;
+                  return{
+                    ...na,
+                    movements:{
+                      squat:{...na.movements.squat,doneSets:oa.movements.squat?.doneSets||{}},
+                      bench:{...na.movements.bench,doneSets:oa.movements.bench?.doneSets||{}},
+                      deadlift:{...na.movements.deadlift,doneSets:oa.movements.deadlift?.doneSets||{}},
+                    }
+                  };
+                })
+              };
+            }));
+          }
+        }catch{}
+      });
+      es.onerror=()=>setSyncErr(true);es.onopen=()=>setSyncErr(false);
+    }catch(e){}
+  }
+
+  function findAthletes(compsList,name){
+    const nl=normalizeName(name);const found=[];
+    compsList.forEach(comp=>comp.athletes.forEach(ath=>{if(normalizeName(ath.name).includes(nl))found.push({comp,athlete:ath});}));
+    if(found.length===0){setMatches([]);}
+    else{setCompChoices(found);}
+  }
+  function pickCompetition(comp,ath){
+    // Choisir une compétition → aller directement en live
+    setSelCompId(comp.id);setSelAthleteId(ath.id);setMatches(null);
+    if(ath.currentMovement)setSelMov(ath.currentMovement);
+    localStorage.setItem("defcon_ath_compId",comp.id);localStorage.setItem("defcon_ath_athId",ath.id);
+    initAudio();setLiveMode(true);
+  }
+  // Garder pickAthlete comme alias (utilisé par AthletePicker)
+  function pickAthlete(comp,ath){pickCompetition(comp,ath);}
+  function handleLogin(cfg,name,data,rosterAthlete){
+    const mg=(data.competitions||[]).map(migrateComp).filter(Boolean);
+    setConfig(cfg);setComps(mg);subscribeFirebase(cfg);
+    if(rosterAthlete){
+      setRosterProfile(rosterAthlete);
+      try{localStorage.setItem("defcon_ath_roster",JSON.stringify(rosterAthlete));}catch{}
+    }
+    const nl=normalizeName(name);
+    const found=[];
+    mg.forEach(comp=>comp.athletes.forEach(ath=>{if(normalizeName(ath.name)===nl)found.push({comp,athlete:ath});}));
+    // Accès même sans compétition (profil roster uniquement)
+    if(found.length>0)setCompChoices(found);
+    else setCompChoices([]);
+  }
+  function backToCompChoices(){
+    setLiveMode(false);setSelCompId(null);setSelAthleteId(null);setShowProfile(false);setHomeTab("competitions");
+  }
+  function disconnect(){
+    localStorage.removeItem("defcon_ath_compId");localStorage.removeItem("defcon_ath_athId");localStorage.removeItem("defcon_ath_roster");
+    if(esRef.current){esRef.current.close();esRef.current=null;}
+    setConfig(null);setSelCompId(null);setSelAthleteId(null);setMatches(null);setCompChoices(null);setComps([]);setLiveMode(false);setRosterProfile(null);setShowProfile(false);setHomeTab("competitions");
+  }
+  function updAthlete(updatedAth){
+    isDirty.current=true;
+    setComps(prev=>prev.map(c=>c.id!==selCompId?c:{...c,athletes:c.athletes.map(a=>a.id===updatedAth.id?updatedAth:a)}));
+  }
+
+  const{inp,btnGold,btnGhost,btnSm,btnDanger}=styles;
+
+  // ─── États de rendu ───────────────────────────────────────────────────────
+  if(loading)return(<ThemeCtx.Provider value={themeValue}><div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",background:C.bg,color:C.muted,fontFamily:"'DM Mono',monospace",fontSize:12,letterSpacing:"0.14em"}}>DEFCON ·</div></ThemeCtx.Provider>);
+  if(!config)return(<ThemeCtx.Provider value={themeValue}><div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}><LoginScreen onLogin={handleLogin} initialErr={autoErr}/></div></ThemeCtx.Provider>);
+  if(matches!==null){
+    const storedName=localStorage.getItem("defcon_ath_name")||"";
+    if(matches.length===0)return(<ThemeCtx.Provider value={themeValue}><div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,gap:16}}><div style={{fontSize:40}}>🔍</div><div style={{fontSize:17,fontWeight:800,color:C.text,textAlign:"center"}}>Profil introuvable</div><div style={{fontSize:13,color:C.muted,textAlign:"center",lineHeight:1.6,maxWidth:320}}>Le profil <strong style={{color:C.gold}}>{storedName}</strong> n'est plus disponible.<br/><br/>Demande à ton coach de vérifier que ton profil existe bien dans l'app, puis reconnecte-toi.</div><button onClick={()=>{setMatches(null);setConfig(null);}} style={{...btnGold,maxWidth:280}}>← Se reconnecter</button></div></ThemeCtx.Provider>);
+    return(<ThemeCtx.Provider value={themeValue}><div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}><AthletePicker matches={matches} onPick={pickAthlete} onBack={disconnect}/></div></ThemeCtx.Provider>);
+  }
+
+  // ─── Écran accueil athlète (profil + compétitions) ────────────────────────
+  if(compChoices&&!liveMode&&!selCompId){
+    const athName=localStorage.getItem("defcon_ath_name")||"";
+    const initials=athName.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+    const b=rosterProfile?.bestLifts||{};
+    // Vue profil complet
+    if(showProfile&&rosterProfile){
+      return(
+        <ThemeCtx.Provider value={themeValue}>
+          <div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+            <AthleteProfileScreen rosterAthlete={rosterProfile} onBack={()=>setShowProfile(false)}/>
+          </div>
+        </ThemeCtx.Provider>
+      );
+    }
+    return(
+      <ThemeCtx.Provider value={themeValue}>
+        <div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          {/* Header */}
+          <div style={{borderBottom:`1px solid ${C.border}`,background:C.headerBg,backdropFilter:"blur(16px)",flexShrink:0}}>
+            <div style={{height:2,background:`linear-gradient(90deg,transparent,${C.gold}55,${C.gold}80,${C.gold}55,transparent)`}}/>
+            <div style={{padding:"10px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:20,height:20,borderRadius:5,
+                  background:`linear-gradient(135deg,${C.gold}2A,${C.gold}0E)`,
+                  border:`1px solid ${C.goldBorder}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <div style={{width:9,height:9,borderRadius:2,border:`1.5px solid ${C.gold}`,background:`${C.gold}40`}}/>
+                </div>
+                <span style={{fontWeight:800,fontSize:13,color:C.text,letterSpacing:"0.04em"}}>DEFCON</span>
+                <span style={{fontSize:8,color:C.gold,letterSpacing:"0.24em",fontWeight:700,opacity:0.85}}>ATHLETE</span>
+              </div>
+              <div style={{display:"flex",gap:7,alignItems:"center"}}>
+                <div style={{width:5,height:5,borderRadius:"50%",background:syncErr?C.red:syncing?C.gold:C.green,opacity:0.9}}/>
+                <button onClick={toggleTheme} style={btnSm}>{darkMode?"☀️":"🌙"}</button>
+                <button onClick={disconnect} style={btnSm}>Déco.</button>
+              </div>
+            </div>
+          </div>
+          {/* Tab bar */}
+          <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,background:C.navBg,flexShrink:0}}>
+            {[
+              {id:"competitions",label:"Mes Compétitions",icon:"🏆"},
+              {id:"calendrier",label:"Calendrier",icon:"📅"},
+              {id:"reglement",label:"Règlement",icon:"📋"},
+            ].map(tab=>{
+              const isActive=homeTab===tab.id;
+              return(
+                <button key={tab.id} onClick={()=>setHomeTab(tab.id)}
+                  style={{flex:1,padding:"11px 8px",border:"none",background:"transparent",
+                    color:isActive?C.gold:C.muted,
+                    fontSize:11,fontWeight:700,letterSpacing:"0.06em",
+                    borderBottom:isActive?`2px solid ${C.gold}`:"2px solid transparent",
+                    display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                    cursor:"pointer",transition:"color 0.18s, border-color 0.18s"}}>
+                  <span style={{fontSize:13}}>{tab.icon}</span>
+                  <span style={{whiteSpace:"nowrap"}}>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Content par onglet */}
+          {homeTab==="calendrier"&&<FFCalendarScreen/>}
+          {homeTab==="reglement"&&<FFReglementScreen/>}
+          {homeTab==="competitions"&&(
+          <div className="scrollable" style={{flex:1,overflowY:"auto",padding:"14px 16px",display:"flex",flexDirection:"column",gap:14}}>
+            {/* Carte identité */}
+            <div style={{display:"flex",alignItems:"center",gap:14,padding:"16px",
+              background:rosterProfile?`linear-gradient(135deg,${C.gold}0C,${C.surface})`:C.surface,
+              border:`1px solid ${rosterProfile?C.goldBorder:C.border}`,borderRadius:16,
+              boxShadow:rosterProfile?`0 4px 24px ${C.gold}08`:"none"}}>
+              <div style={{width:50,height:50,borderRadius:"50%",flexShrink:0,
+                background:rosterProfile?`linear-gradient(135deg,${C.gold}2A,${C.gold}0E)`:C.surface2,
+                border:`1.5px solid ${rosterProfile?C.goldBorder:C.border2}`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:16,fontWeight:800,color:rosterProfile?C.gold:C.muted}}>
+                {initials}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{athName}</div>
+                {rosterProfile&&(
+                  <div style={{display:"flex",gap:5,marginTop:5,flexWrap:"wrap"}}>
+                    {rosterProfile.category&&<span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,background:C.goldDim,color:C.gold,border:`1px solid ${C.goldBorder}`,letterSpacing:"0.04em"}}>{rosterProfile.category}</span>}
+                    <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20,background:C.blueDim,color:C.blue,border:`1px solid ${C.blueBorder}`,letterSpacing:"0.04em"}}>IPF</span>
+                  </div>
+                )}
+              </div>
+              {rosterProfile&&(
+                <button onClick={()=>setShowProfile(true)}
+                  style={{background:C.goldDim,border:`1px solid ${C.goldBorder}`,borderRadius:10,
+                    color:C.gold,fontSize:11,fontWeight:700,padding:"8px 12px",flexShrink:0,
+                    cursor:"pointer",letterSpacing:"0.04em"}}>
+                  Profil →
+                </button>
+              )}
+            </div>
+            {/* Best lifts résumé (si roster) */}
+            {rosterProfile&&(b.squat||b.bench||b.deadlift)&&(
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:7}}>
+                {[
+                  {label:"SQ",val:b.squat,color:C.squat},
+                  {label:"BP",val:b.bench,color:C.bench},
+                  {label:"DL",val:b.deadlift,color:C.deadlift},
+                  {label:"TOT",val:b.total,color:C.text},
+                ].map(s=>(
+                  <div key={s.label} style={{padding:"10px 6px",borderRadius:12,
+                    background:`linear-gradient(145deg,${s.color}0C,${C.surface})`,
+                    border:`1px solid ${s.color}28`,textAlign:"center",position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:1.5,background:`linear-gradient(90deg,transparent,${s.color}40,transparent)`}}/>
+                    <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:5,fontWeight:700}}>{s.label}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:s.color,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{s.val||"—"}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Section Compétitions */}
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.18em"}}>Mes compétitions</div>
+                <div style={{flex:1,height:"1px",background:C.border}}/>
+              </div>
+              {compChoices.length===0&&(
+                <div style={{textAlign:"center",padding:"28px 20px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:14}}>
+                  <div style={{fontSize:28,marginBottom:8}}>🏆</div>
+                  <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:4}}>Pas encore inscrit</div>
+                  <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>Ton coach ne t'a pas encore ajouté à une compétition. Reviens plus tard !</div>
+                </div>
+              )}
+              {compChoices.map(({comp,athlete},i)=>{
+                const group=comp.groups?.find(g=>g.id===athlete.groupId);
+                const d=daysUntil(comp.date);
+                return(
+                  <button key={i} onClick={()=>pickCompetition(comp,athlete)}
+                    style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:"16px",
+                      textAlign:"left",display:"flex",flexDirection:"column",gap:9,width:"100%",
+                      cursor:"pointer",marginBottom:10,transition:"border-color 0.18s, background 0.18s"}}>
+                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+                      <div style={{fontSize:15,fontWeight:800,color:C.text,lineHeight:1.3}}>{comp.name}</div>
+                      {d!==null&&<span style={{fontSize:9,fontWeight:800,flexShrink:0,letterSpacing:"0.08em",
+                        color:d===0?C.red:d>0?C.gold:C.muted,
+                        background:d===0?C.redDim:d>0?C.goldDim:C.surface2,
+                        border:`1px solid ${d===0?C.redBorder:d>0?C.goldBorder:C.border}`,
+                        borderRadius:6,padding:"3px 9px"}}>{d===0?"AUJOURD'HUI":d>0?`J-${d}`:`J+${Math.abs(d)}`}</span>}
+                    </div>
+                    <div style={{fontSize:11,color:C.muted,letterSpacing:"0.02em"}}>{comp.date?formatDate(comp.date):"Date non définie"} · {comp.compStartTime||"—"}</div>
+                    {group&&<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <span style={{fontSize:10,color:C.muted,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,padding:"2px 9px"}}>{group.name} · Pos. #{athlete.movements?.squat?.position||1}</span>
+                    </div>}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:2}}>
+                      <div style={{height:1,flex:1,background:C.border,marginRight:12}}/>
+                      <span style={{fontSize:11,color:C.gold,fontWeight:700,letterSpacing:"0.06em"}}>LANCER →</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          )}
+        </div>
+      </ThemeCtx.Provider>
+    );
+  }
+
+  const selComp=comps.find(c=>c.id===selCompId);
+  const selAth=selComp?.athletes?.find(a=>a.id===selAthleteId);
+  if(!selComp||!selAth)return(<ThemeCtx.Provider value={themeValue}><div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,gap:16}}><div style={{fontSize:40}}>⚠️</div><div style={{fontSize:15,fontWeight:800,color:C.text}}>Profil introuvable</div><div style={{fontSize:12,color:C.muted,textAlign:"center",lineHeight:1.6,maxWidth:280}}>Reconnecte-toi pour recharger tes données.</div><button onClick={disconnect} style={{...btnGold,maxWidth:260}}>Se reconnecter</button></div></ThemeCtx.Provider>);
+
+  // Données calculées à chaque render selon selMov
+  const group=selComp.groups?.find(g=>g.id===selAth.groupId);
+  const days=daysUntil(selComp.date);
+  const delay=selComp.liveDelay||0; // retard synchronisé depuis l'app coach
+  const athMov=selAth.movements[selMov]||defaultMovement();
+  const compStart=getMovStartTime(selComp,selAth.groupId,selMov);
+  const schedule=computeSchedule(athMov,compStart,athMov.position||1,delay);
+  const liftMin=timeToMinutes(compStart)+(athMov.position||1)-1+delay;
+  const doneSets=athMov.doneSets||{};
+  const nextSc=schedule.find(sc=>!doneSets[setKey(sc)]);
+  const allDone=schedule.length>0&&schedule.every(sc=>!!doneSets[setKey(sc)]);
+  const mc=movColor(C,selMov);
+  const movIdx=MOV_ORDER.indexOf(selMov);
+  const firstSc=schedule.find(s=>s.type==="general")||schedule[0];
+
+  function updMov(k,v){isDirty.current=true;updAthlete({...selAth,movements:{...selAth.movements,[selMov]:{...athMov,[k]:v}}});}
+  function toggleDone(sc){const k=setKey(sc);updMov("doneSets",{...doneSets,[k]:!doneSets[k]});}
+
+  // ─── Composant MovPills ───────────────────────────────────────────────────
+  const MovPills=()=>(
+    <div style={{display:"flex",background:darkMode?"rgba(0,0,0,0.45)":C.surface2,borderRadius:14,padding:4,gap:3,border:`1px solid ${C.border}`}}>
+      {MOV_ORDER.map(mk=>{
+        const mc2=movColor(C,mk);const start=getMovStartTime(selComp,selAth.groupId,mk);const isAct=selMov===mk;
+        return(<button key={mk} onClick={()=>{setSelMov(mk);}}
+          style={{flex:1,padding:"10px 6px 9px",borderRadius:10,border:"none",fontSize:12,fontWeight:700,
+            letterSpacing:"0.04em",
+            background:isAct?`${mc2}1E`:"transparent",
+            color:isAct?mc2:C.muted,
+            borderBottom:isAct?`2px solid ${mc2}`:"2px solid transparent",
+            boxShadow:isAct?`0 2px 16px ${mc2}16`:"none",
+            transition:"all 0.2s cubic-bezier(0.22,1,0.36,1)",
+            display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+          <span>{mk==="squat"?"SQ":mk==="bench"?"BP":"DL"}</span>
+          <span style={{fontSize:9,fontFamily:"'DM Mono',monospace",fontWeight:isAct?600:400,opacity:isAct?0.9:0.55}}>{start}</span>
+        </button>);
+      })}
+    </div>
+  );
+
+  // ─── Header ───────────────────────────────────────────────────────────────
+  const Header=({isLive=false})=>(
+    <div style={{borderBottom:`1px solid ${C.border}`,background:C.headerBg,backdropFilter:"blur(16px)",flexShrink:0}}>
+      {/* Accent top */}
+      {isLive
+        ? <div style={{height:2,background:`linear-gradient(90deg,transparent,${C.red}70,${C.red},${C.red}70,transparent)`}}/>
+        : <div style={{height:2,background:`linear-gradient(90deg,transparent,${C.gold}50,${C.gold}75,${C.gold}50,transparent)`}}/>
+      }
+      <div style={{padding:"9px 16px 9px"}}>
+        {/* Row 1: brand + controls */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:9}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {isLive&&<button onClick={backToCompChoices} style={{...btnSm,padding:"4px 10px",fontSize:11}}>←</button>}
+            <div style={{display:"flex",alignItems:"center",gap:7}}>
+              <div style={{width:18,height:18,borderRadius:4,
+                background:`linear-gradient(135deg,${C.gold}28,${C.gold}0C)`,
+                border:`1px solid ${C.goldBorder}`,
+                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <div style={{width:8,height:8,borderRadius:2,border:`1.5px solid ${C.gold}`,background:`${C.gold}3A`}}/>
+              </div>
+              <span style={{fontWeight:800,fontSize:13,color:C.text,letterSpacing:"0.04em"}}>DEFCON</span>
+              <span style={{fontSize:8,color:C.gold,letterSpacing:"0.22em",fontWeight:700,opacity:0.85}}>ATHLETE</span>
+              {isLive&&<span className="live-badge" style={{fontSize:8,background:C.redDim,color:C.red,padding:"2px 7px",borderRadius:4,letterSpacing:"0.14em",fontWeight:800,border:`1px solid ${C.redBorder}`}}>LIVE</span>}
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:5,height:5,borderRadius:"50%",background:syncErr?C.red:syncing?C.gold:C.green,opacity:0.9}}/>
+            <button onClick={reqNotifs} style={{...btnSm,background:notifGranted?C.greenDim:C.goldDim,border:`1px solid ${notifGranted?C.greenBorder:C.goldBorder}`,color:notifGranted?C.green:C.gold}}>{notifGranted?"🔔":"🔕"}</button>
+            <button onClick={toggleTheme} style={btnSm}>{darkMode?"☀️":"🌙"}</button>
+            {!isLive&&<button onClick={disconnect} style={btnSm}>Déco.</button>}
+          </div>
+        </div>
+        {/* Row 2: comp name + days badge */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{selComp.name}</div>
+            <div style={{fontSize:10,color:C.muted,marginTop:2,letterSpacing:"0.03em"}}>{selComp.date?formatDate(selComp.date):"Date non définie"} · {selComp.compStartTime}</div>
+          </div>
+          {days!==null&&<span style={{fontSize:9,fontWeight:800,flexShrink:0,letterSpacing:"0.1em",
+            color:days===0?C.red:days>0?C.gold:C.muted,
+            background:days===0?C.redDim:days>0?C.goldDim:C.surface,
+            border:`1px solid ${days===0?C.redBorder:days>0?C.goldBorder:C.border}`,
+            borderRadius:6,padding:"3px 10px"}}>{days===0?"AUJOURD'HUI":days>0?`J-${days}`:`J+${Math.abs(days)}`}</span>}
+        </div>
+        {/* Row 3: athlete chip */}
+        <div style={{display:"flex",alignItems:"center",gap:9,padding:"7px 11px",
+          background:`${C.gold}0F`,border:`1px solid ${C.goldBorder}`,borderRadius:10}}>
+          <div style={{width:26,height:26,borderRadius:"50%",
+            background:C.goldDim,border:`1px solid ${C.goldBorder}`,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:10,fontWeight:800,color:C.gold,flexShrink:0,letterSpacing:"0.02em"}}>
+            {selAth.name.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+          </div>
+          <span style={{fontSize:12,fontWeight:800,color:C.gold}}>{selAth.name}</span>
+          <span style={{fontSize:10,color:C.muted,marginLeft:1}}>{group?.name||"Groupe"} · #{athMov.position||1}</span>
+          {delay>0&&<span style={{marginLeft:"auto",fontSize:10,fontWeight:700,fontFamily:"'DM Mono',monospace",color:C.red,background:C.redDim,border:`1px solid ${C.redBorder}`,borderRadius:6,padding:"2px 8px"}}>+{delay}min</span>}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ─── MODE LIVE — style identique à LaunchCard ─────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  if(liveMode)return(
+    <ThemeCtx.Provider value={themeValue}>
+      <div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <Header isLive/>
+
+        {/* MovPills */}
+        <div style={{padding:"8px 14px 0",flexShrink:0}}>
+          <MovPills/>
+        </div>
+
+        {/* Bandeau timing */}
+        <div style={{padding:"6px 14px 8px",flexShrink:0,borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",gap:12,padding:"11px 14px",
+            background:`linear-gradient(135deg,${mc}12,${mc}06)`,
+            borderRadius:12,border:`1px solid ${mc}30`,
+            flexWrap:"wrap",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.16em",marginBottom:3,fontWeight:700}}>{athMov.generalWarmup?.enabled!==false?"Départ éch.":"1ère barre"}</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:22,fontWeight:700,color:mc,lineHeight:1}}>{firstSc?.startTime||"—"}</div>
+            </div>
+            <div style={{width:1,height:30,background:`${mc}30`,flexShrink:0}}/>
+            <div>
+              <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.16em",marginBottom:3,fontWeight:700}}>Passage</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:22,fontWeight:700,color:"#d89060",lineHeight:1}}>{minutesToTime(liftMin)}</div>
+            </div>
+            {athMov.openerWeight&&<>
+              <div style={{width:1,height:30,background:`${mc}30`,flexShrink:0}}/>
+              <div>
+                <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.16em",marginBottom:3,fontWeight:700}}>Opener</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:22,fontWeight:700,color:mc,lineHeight:1}}>{athMov.openerWeight} <span style={{fontSize:12,fontWeight:600,opacity:0.6}}>kg</span></div>
+              </div>
+            </>}
+          </div>
+        </div>
+
+        {/* Schedule — IDENTIQUE au LaunchCard */}
+        <div className="scrollable" style={{flex:1,padding:"10px 14px",display:"flex",flexDirection:"column",gap:5}}>
+          {schedule.map((sc,i)=>{
+            const k=setKey(sc);const isDone=!!doneSets[k];const isNext=sc===nextSc&&!allDone;
+            const diff=sc.startMin*60-nowSeconds();const isUrgent=!isDone&&Math.abs(diff)<90;const isGeneral=sc.type==="general";
+            return(
+              <div key={sc.id||i} style={{display:"grid",gridTemplateColumns:"26px 1fr auto auto 36px",gap:8,alignItems:"center",
+                padding:"10px 11px",borderRadius:11,transition:"all 0.22s",
+                background:isDone?C.greenDim:isUrgent?C.goldDim:isNext?C.surface2:"transparent",
+                border:`1px solid ${isDone?C.greenBorder:isUrgent?C.goldBorder:isNext?C.border2:"transparent"}`,
+                opacity:isDone?0.48:1}}>
+                <div style={{width:22,height:22,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
+                  background:isGeneral?C.blueDim:C.surface,border:`1px solid ${isGeneral?C.blueBorder:C.border}`,flexShrink:0}}>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:isGeneral?C.blue:C.muted,fontWeight:600}}>{isGeneral?"~":i}</span>
+                </div>
+                {isGeneral
+                  ?<span style={{fontSize:13,fontWeight:isDone?400:600,color:isDone?C.muted:C.blue,lineHeight:1.3}}>Éch. général <span style={{fontSize:10,color:C.muted,fontWeight:400}}>{sc.duration}min</span></span>
+                  :<span style={{fontFamily:"'DM Mono',monospace",fontSize:16,fontWeight:isDone?400:600,color:isDone?C.muted:isNext?mc:C.text,textDecoration:isDone?"line-through":"none",lineHeight:1}}>{sc.weight} <span style={{fontSize:10,color:C.muted,fontWeight:400}}>kg</span></span>
+                }
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:isDone?C.muted:C.text,letterSpacing:"0.04em"}}>{sc.startTime}</span>
+                {isDone?<span style={{fontSize:11,color:C.green,fontWeight:700}}>✓</span>:isNext?<Countdown targetMin={sc.startMin} sm/>:<span/>}
+                <button onClick={()=>toggleDone(sc)} style={{width:34,height:34,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",
+                  background:isDone?C.greenDim:C.surface2,
+                  border:`1px solid ${isDone?C.greenBorder:C.border}`,
+                  color:isDone?C.green:C.muted,fontSize:15,fontWeight:700}}>
+                  {isDone?"✓":"○"}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Opener row */}
+          {athMov.openerWeight&&(
+            <div style={{display:"grid",gridTemplateColumns:"26px 1fr auto auto 36px",gap:8,alignItems:"center",
+              padding:"10px 11px",borderRadius:11,
+              background:`linear-gradient(135deg,${mc}10,${mc}06)`,
+              border:`1px solid ${mc}38`}}>
+              <div style={{width:22,height:22,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",background:`${mc}1A`,border:`1px solid ${mc}38`}}>
+                <span style={{color:mc,fontSize:11,fontWeight:800}}>★</span>
+              </div>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:16,fontWeight:600,color:mc}}>{athMov.openerWeight} <span style={{fontSize:10,color:C.muted,fontWeight:400}}>kg opener</span></span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:"#d89060",letterSpacing:"0.04em"}}>{minutesToTime(liftMin)}</span>
+              <Countdown targetMin={liftMin} sm/>
+              <span/>
+            </div>
+          )}
+
+          {/* Plan de match déroulant (comme LaunchCard) */}
+          {athMov.openerWeight&&(
+            <details style={{marginTop:2}}>
+              <summary style={{cursor:"pointer",fontSize:11,color:C.muted,padding:"4px 0",listStyle:"none",display:"flex",alignItems:"center",gap:4}}>
+                <span>▸</span> PLAN DE MATCH
+              </summary>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginTop:8}}>
+                {PLANS.map(p=>(
+                  <div key={p.key} style={{background:`${planColor(C,p.key)}0A`,border:`1px solid ${planColor(C,p.key)}22`,borderRadius:7,padding:"8px 6px"}}>
+                    <div style={{fontSize:9,color:planColor(C,p.key),fontWeight:700,textAlign:"center",marginBottom:6,letterSpacing:"0.06em"}}>{p.label.toUpperCase()}</div>
+                    {[{k:"attempt2",l:"2ème"},{k:"attempt3",l:"3ème"}].map(a=>(
+                      <div key={a.k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                        <span style={{fontSize:9,color:C.muted}}>{a.l}</span>
+                        <span style={{fontFamily:"'DM Mono',monospace",fontSize:12,fontWeight:600,color:planColor(C,p.key)}}>
+                          {athMov.gamePlan?.[a.k]?.[p.key]||"—"}{athMov.gamePlan?.[a.k]?.[p.key]?" kg":""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+
+          {/* Navigation entre mouvements */}
+          <div style={{display:"flex",gap:8,marginTop:6}}>
+            {movIdx>0&&(
+              <button onClick={()=>setSelMov(MOV_ORDER[movIdx-1])} style={{...btnGhost,fontSize:12,padding:"9px 12px",flex:1}}>
+                ← {MOV_ORDER[movIdx-1]==="squat"?"Squat":MOV_ORDER[movIdx-1]==="bench"?"Bench":"Deadlift"}
+              </button>
+            )}
+            {allDone&&movIdx<MOV_ORDER.length-1&&(
+              <button onClick={()=>{updAthlete({...selAth,currentMovement:MOV_ORDER[movIdx+1]});setSelMov(MOV_ORDER[movIdx+1]);}} style={{...btnGold,fontSize:13,padding:"12px",flex:2}}>
+                → {MOV_ORDER[movIdx+1]==="squat"?"Squat":MOV_ORDER[movIdx+1]==="bench"?"Bench":"Deadlift"}
+              </button>
+            )}
+            {allDone&&movIdx===MOV_ORDER.length-1&&(
+              <div style={{textAlign:"center",padding:"10px",color:C.green,fontSize:13,fontWeight:700,flex:1}}>✅ Terminé !</div>
+            )}
+          </div>
+          <div style={{height:10}}/>
+        </div>
+      </div>
+      <NotifBanner/>
+    </ThemeCtx.Provider>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ─── VUE PRÉPARATION ──────────────────────────────────────────────────────
+  return(
+    <ThemeCtx.Provider value={themeValue}>
+      <div style={{height:"100dvh",background:C.bg,color:C.text,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <Header/>
+
+        {/* MovPills */}
+        <div style={{padding:"8px 16px 0",flexShrink:0}}>
+          <MovPills/>
+        </div>
+
+        {/* Timing summary */}
+        {firstSc&&(
+          <div style={{padding:"8px 16px 0",flexShrink:0}}>
+            <div style={{display:"flex",gap:14,padding:"13px 15px",
+              background:`linear-gradient(135deg,${mc}14,${mc}07)`,
+              borderRadius:13,border:`1px solid ${mc}32`,flexWrap:"wrap",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:3,fontWeight:700}}>{athMov.generalWarmup?.enabled!==false?"Départ éch.":"1ère barre"}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:24,fontWeight:700,color:mc,lineHeight:1}}>{firstSc.startTime}</div>
+              </div>
+              <div style={{width:1,height:34,background:`${mc}28`,flexShrink:0}}/>
+              <div>
+                <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:3,fontWeight:700}}>Passage</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:24,fontWeight:700,color:"#d89060",lineHeight:1}}>{minutesToTime(liftMin)}</div>
+              </div>
+              {athMov.openerWeight&&<>
+                <div style={{width:1,height:34,background:`${mc}28`,flexShrink:0}}/>
+                <div>
+                  <div style={{fontSize:8,color:C.muted,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:3,fontWeight:700}}>Opener</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:24,fontWeight:700,color:mc,lineHeight:1}}>{athMov.openerWeight} <span style={{fontSize:12,opacity:0.6}}>kg</span></div>
+                </div>
+              </>}
+              <div style={{marginLeft:"auto"}}><Countdown targetMin={firstSc.startMin}/></div>
+            </div>
+          </div>
+        )}
+
+        {/* Plan de match — lecture seule */}
+        {athMov.openerWeight&&(
+          <div className="scrollable" style={{flex:1,padding:"12px 16px",display:"flex",flexDirection:"column",gap:10,overflowY:"auto"}}>
+            <div style={{fontSize:10,color:C.muted,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700}}>Plan de match</div>
+            {[{key:"attempt2",label:"2ème essai"},{key:"attempt3",label:"3ème essai"}].map(att=>(
+              <div key={att.key}>
+                <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:6,fontWeight:600}}>{att.label}</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                  {PLANS.map(p=>{
+                    const pc=planColor(C,p.key);const val=athMov.gamePlan?.[att.key]?.[p.key];
+                    return(
+                      <div key={p.key} style={{background:`linear-gradient(145deg,${pc}0C,${pc}04)`,border:`1px solid ${pc}28`,borderRadius:11,padding:"13px 8px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+                        <div style={{position:"absolute",top:0,left:0,right:0,height:1.5,background:`linear-gradient(90deg,transparent,${pc}45,transparent)`}}/>
+                        <div style={{fontSize:8,color:pc,fontWeight:700,letterSpacing:"0.1em",marginBottom:9,opacity:0.9}}>{p.label.toUpperCase()}</div>
+                        <div style={{fontFamily:"'DM Mono',monospace",fontSize:22,fontWeight:800,color:val?pc:C.muted,lineHeight:1}}>{val||"—"}</div>
+                        {val&&<div style={{fontSize:9,color:C.muted,marginTop:5,letterSpacing:"0.06em"}}>KG</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!athMov.openerWeight&&<div style={{flex:1}}/>}
+
+        {/* Bouton Lancer */}
+        <div style={{padding:"16px 16px 28px",borderTop:`1px solid ${C.border}`,flexShrink:0,background:C.navBg}}>
+          <button onClick={()=>{initAudio();setLiveMode(true);}} style={{...btnGold,display:"flex",alignItems:"center",justifyContent:"center",gap:10,fontSize:14,fontWeight:800,padding:"16px",letterSpacing:"0.1em"}}>
+            LANCER LA COMPÉTITION →
+          </button>
+        </div>
+      </div>
+      <NotifBanner/>
+    </ThemeCtx.Provider>
+  );
+}
+
+
+const root=ReactDOM.createRoot(document.getElementById("root"));
+root.render(<ErrorBoundary><App/></ErrorBoundary>);
+</script>
+</body>
+</html>
