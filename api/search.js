@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (!q) return res.status(400).json({ error: 'Missing query parameter q' });
 
   try {
-    const url = `https://www.openipf.org/api/search/rankings?q=${encodeURIComponent(q)}&limit=10`;
+    const url = `https://www.openipf.org/api/search/lifters?q=${encodeURIComponent(q)}&limit=10`;
     const response = await fetch(url, {
       headers: { 'Accept': 'application/json' }
     });
